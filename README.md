@@ -22,12 +22,14 @@ Clone this repo to your Clawdbot skills directory:
 ```bash
 # For workspace skills
 cd <workspace>/skills
-git clone https://github.com/cvsloane/m365-skill ms365
+git clone https://github.com/YOUR_USERNAME/m365-skill ms365
 
 # Or for managed skills
 cd ~/.clawdbot/skills
-git clone https://github.com/cvsloane/m365-skill ms365
+git clone https://github.com/YOUR_USERNAME/m365-skill ms365
 ```
+
+Or download directly from releases.
 
 ### 2. Install Dependencies
 
@@ -102,7 +104,7 @@ From the **Overview** page, note:
 
 **Step 5: Set Environment Variables**
 
-Add to your Clawdbot environment (Coolify, .env file, etc.):
+Add to your environment (.env file, Docker, or your deployment platform):
 
 ```bash
 MS365_MCP_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
