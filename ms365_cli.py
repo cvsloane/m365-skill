@@ -103,12 +103,12 @@ def cmd_mail_list(args):
         params['top'] = args.top
     if args.folder:
         params['folderId'] = args.folder
-    result = call_mcp("list-messages", params)
+    result = call_mcp("list-mail-messages", params)
     format_output(result)
 
 def cmd_mail_read(args):
     """Read a specific email."""
-    result = call_mcp("get-message", {"messageId": args.id})
+    result = call_mcp("get-mail-message", {"messageId": args.id})
     format_output(result)
 
 def cmd_mail_send(args):
@@ -166,7 +166,7 @@ def cmd_files_list(args):
 
 def cmd_tasks_list(args):
     """List To Do task lists."""
-    result = call_mcp("list-todo-lists")
+    result = call_mcp("list-todo-task-lists")
     format_output(result)
 
 def cmd_tasks_get(args):
@@ -190,7 +190,7 @@ def cmd_contacts_list(args):
     params = {}
     if args.top:
         params['top'] = args.top
-    result = call_mcp("list-contacts", params)
+    result = call_mcp("list-outlook-contacts", params)
     format_output(result)
 
 def cmd_contacts_search(args):
