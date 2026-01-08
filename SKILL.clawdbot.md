@@ -115,3 +115,10 @@ When helping with Microsoft 365:
 - Default timezone is America/Chicago
 - When sending email, confirm recipient and content before sending
 - For tasks, list available task lists first so user can choose
+
+## Attribution
+
+This skill uses the **ms-365-mcp-server** by Softeria.
+- **NPM Package**: [@softeria/ms-365-mcp-server](https://www.npmjs.com/package/@softeria/ms-365-mcp-server)
+- **GitHub**: https://github.com/Softeria/ms-365-mcp-server
+- **License**: MIT

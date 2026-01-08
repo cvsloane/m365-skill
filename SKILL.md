@@ -1,183 +1,124 @@
----
-name: ms365
-description: |
-  Microsoft 365 integration via Graph API. Access Outlook email, Calendar,
-  OneDrive, To Do, Planner, Contacts, OneNote, and more.
-
-  Personal accounts: Email, Calendar, OneDrive, To Do, Contacts, OneNote
-  Work accounts (--org-mode): All above plus Teams, SharePoint, Shared Mailboxes
-
-  Uses ms-365-mcp-server MCP server via mcporter.
-homepage: https://github.com/Softeria/ms-365-mcp-server
-metadata:
-  clawdbot:
-    emoji: "📧"
-    primaryEnv: "MS365_MCP_CLIENT_ID"
-    requires:
-      bins: ["node", "npx"]
-    install:
-      - id: ms365-mcp
-        kind: node
-        package: "@softeria/ms-365-mcp-server"
-        label: "Install ms-365-mcp-server"
----
-
 # Microsoft 365 Integration
 
-Access and manage your Microsoft 365 services through natural conversation.
+## Description
+Access Microsoft 365 services - Email (Outlook), Calendar, OneDrive, To Do tasks, and Contacts via MS Graph API.
 
-## Capabilities
+## Activation
+Activated when user mentions: outlook, email, calendar, onedrive, microsoft, office 365, o365, ms365, my meetings, my emails, schedule meeting, send email, check calendar, to do, microsoft tasks
+
+## Configuration
+Authentication is cached after first login. No environment variables required for device code flow.
+
+For headless/automated operation, set these environment variables:
+- MS365_MCP_CLIENT_ID - Azure AD app client ID
+- MS365_MCP_CLIENT_SECRET - Azure AD app secret
+- MS365_MCP_TENANT_ID - Tenant ID (use "consumers" for personal accounts)
+
+## Available Commands
+
+### Authentication
+
+```bash
+# Login via device code (interactive)
+python3 /root/clawd/skills/ms365/ms365_cli.py login
+
+# Check authentication status
+python3 /root/clawd/skills/ms365/ms365_cli.py status
+
+# List cached accounts
+python3 /root/clawd/skills/ms365/ms365_cli.py accounts
+
+# Get current user info
+python3 /root/clawd/skills/ms365/ms365_cli.py user
+```
 
 ### Email (Outlook)
-- List, read, search emails
-- Send emails with attachments
-- Delete, move, mark as read/unread
-- Search across mailboxes
+
+```bash
+# List recent emails
+python3 /root/clawd/skills/ms365/ms365_cli.py mail list [--top N]
+
+# Read specific email
+python3 /root/clawd/skills/ms365/ms365_cli.py mail read MESSAGE_ID
+
+# Send email
+python3 /root/clawd/skills/ms365/ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" --body "Message body"
+```
 
 ### Calendar
-- View upcoming events
-- Create, update, delete events
-- Check availability
-- Manage recurring events
 
-### OneDrive
-- List files and folders
-- Upload and download files
-- Create folders, delete items
-- Share files
+```bash
+# List upcoming events
+python3 /root/clawd/skills/ms365/ms365_cli.py calendar list [--top N]
 
-### To Do
-- List tasks and lists
-- Create, update, complete tasks
-- Set due dates and reminders
+# Create event
+python3 /root/clawd/skills/ms365/ms365_cli.py calendar create --subject "Meeting" --start "2026-01-15T10:00:00" --end "2026-01-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
+```
+
+### OneDrive Files
+
+```bash
+# List files in root
+python3 /root/clawd/skills/ms365/ms365_cli.py files list
+
+# List files in folder
+python3 /root/clawd/skills/ms365/ms365_cli.py files list --path "Documents"
+```
+
+### To Do Tasks
+
+```bash
+# List task lists
+python3 /root/clawd/skills/ms365/ms365_cli.py tasks lists
+
+# Get tasks from a list
+python3 /root/clawd/skills/ms365/ms365_cli.py tasks get LIST_ID
+
+# Create task
+python3 /root/clawd/skills/ms365/ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-01-20"]
+```
 
 ### Contacts
-- List and search contacts
-- View contact details
-- Create new contacts
 
-### OneNote
-- List notebooks and sections
-- Read page content
-- Create notes
+```bash
+# List contacts
+python3 /root/clawd/skills/ms365/ms365_cli.py contacts list [--top N]
 
-### Work/Organization Features (requires --org-mode)
-- Teams messaging
-- SharePoint site access
-- Shared mailboxes
+# Search contacts
+python3 /root/clawd/skills/ms365/ms365_cli.py contacts search "John"
+```
 
 ## Usage Examples
 
-### Reading Email
+User: "Check my outlook email"
+Agent: Runs `mail list --top 10` command
 
-"Check my recent emails"
-"Show me unread emails from today"
-"Search for emails from john@example.com"
-"Find emails with attachments about the quarterly report"
+User: "What meetings do I have today?"
+Agent: Runs `calendar list` command
 
-### Sending Email
+User: "Send an email to john@company.com about the project update"
+Agent: Runs `mail send` with appropriate parameters
 
-"Send an email to jane@example.com with subject 'Meeting Tomorrow' and body 'Can we meet at 2pm?'"
-"Reply to that email saying I'll be there"
+User: "Show my OneDrive files"
+Agent: Runs `files list` command
 
-### Calendar
+User: "Add a task to review the budget"
+Agent: Lists task lists first, then creates task in appropriate list
 
-"What's on my calendar today?"
-"Show me my meetings for this week"
-"Create a meeting called 'Team Standup' tomorrow at 9am for 30 minutes"
-"Cancel my 3pm meeting"
+## Prompts
 
-### OneDrive
+When helping with Microsoft 365:
+- Use the ms365_cli.py script for all operations
+- Check authentication status first if commands fail
+- If not logged in, guide user through device code login
+- For calendar events, use ISO 8601 datetime format
+- Default timezone is America/Chicago
+- When sending email, confirm recipient and content before sending
+- For tasks, list available task lists first so user can choose
 
-"List files in my Documents folder"
-"Download the budget spreadsheet"
-"Upload this file to OneDrive"
+## Attribution
 
-### To Do
-
-"Show my tasks"
-"Add a task: Review quarterly report by Friday"
-"Mark the 'Send invoice' task as complete"
-
-## Technical Details
-
-This skill uses `mcporter` to communicate with the `ms-365-mcp-server` MCP server.
-
-### Direct mcporter Commands
-
-```bash
-# List available tools
-mcporter list ms365
-
-# Email operations
-mcporter call ms365.list_messages folder=inbox limit=10
-mcporter call ms365.get_message id="MESSAGE_ID"
-mcporter call ms365.send_message to="user@example.com" subject="Hello" body="Message"
-mcporter call ms365.search_messages query="from:boss subject:urgent"
-
-# Calendar operations
-mcporter call ms365.list_events
-mcporter call ms365.create_event subject="Meeting" start="2026-01-15T10:00:00" end="2026-01-15T11:00:00"
-mcporter call ms365.update_event id="EVENT_ID" subject="Updated Meeting"
-mcporter call ms365.delete_event id="EVENT_ID"
-
-# OneDrive operations
-mcporter call ms365.list_files path="/"
-mcporter call ms365.list_files path="/Documents"
-mcporter call ms365.download_file path="/Documents/report.pdf"
-mcporter call ms365.upload_file path="/Documents/new-file.txt" content="File content"
-
-# To Do operations
-mcporter call ms365.list_task_lists
-mcporter call ms365.list_tasks list_id="LIST_ID"
-mcporter call ms365.create_task list_id="LIST_ID" title="New task" due_date="2026-01-20"
-mcporter call ms365.complete_task list_id="LIST_ID" task_id="TASK_ID"
-
-# Contacts
-mcporter call ms365.list_contacts limit=20
-mcporter call ms365.search_contacts query="John"
-```
-
-## Setup
-
-### Prerequisites
-
-1. Node.js 20+ installed
-2. Microsoft account (personal or work)
-3. Azure AD app registration (for headless operation)
-
-### Authentication Options
-
-**Option 1: Azure AD App (Recommended for Docker/headless)**
-
-Set these environment variables:
-- `MS365_MCP_CLIENT_ID` - Azure app client ID
-- `MS365_MCP_CLIENT_SECRET` - Azure app client secret
-- `MS365_MCP_TENANT_ID` - `consumers` for personal, or your tenant ID
-
-**Option 2: Device Code Flow (Interactive)**
-
-No setup needed. On first use, follow the prompts to authenticate via browser.
-
-See README.md for detailed Azure AD setup instructions.
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `MS365_MCP_CLIENT_ID` | Azure AD application client ID |
-| `MS365_MCP_CLIENT_SECRET` | Azure AD application client secret |
-| `MS365_MCP_TENANT_ID` | Tenant ID (`consumers` for personal accounts) |
-| `MS365_MCP_ORG_MODE` | Set to `true` for Teams/SharePoint access |
-| `MS365_MCP_OUTPUT_FORMAT` | Set to `toon` for 30-60% token reduction |
-
-## Troubleshooting
-
-### "Authentication required"
-Run device code auth or verify Azure AD credentials are set correctly.
-
-### "Insufficient permissions"
-Check Azure AD app has required Graph API permissions.
-
-### "Token expired"
-Re-authenticate using device code flow or refresh credentials.
+This skill uses the **ms-365-mcp-server** by Softeria.
+- **NPM Package**: [@softeria/ms-365-mcp-server](https://www.npmjs.com/package/@softeria/ms-365-mcp-server)
+- **GitHub**: https://github.com/Softeria/ms-365-mcp-server
+- **License**: MIT
