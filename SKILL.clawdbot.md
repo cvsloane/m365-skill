@@ -20,72 +20,74 @@ For headless/automated operation, set these environment variables:
 
 ```bash
 # Login via device code (interactive)
-python3 /root/clawd/skills/ms365/ms365_cli.py login
+python3 ms365_cli.py login
 
 # Check authentication status
-python3 /root/clawd/skills/ms365/ms365_cli.py status
+python3 ms365_cli.py status
 
 # List cached accounts
-python3 /root/clawd/skills/ms365/ms365_cli.py accounts
+python3 ms365_cli.py accounts
 
 # Get current user info
-python3 /root/clawd/skills/ms365/ms365_cli.py user
+python3 ms365_cli.py user
 ```
+
+**Note:** When running from Clawdbot, use the full path to the script in your skills directory (e.g., `python3 /root/clawd/skills/ms365/ms365_cli.py` or adjust to your installation path).
 
 ### Email (Outlook)
 
 ```bash
 # List recent emails
-python3 /root/clawd/skills/ms365/ms365_cli.py mail list [--top N]
+python3 ms365_cli.py mail list [--top N]
 
 # Read specific email
-python3 /root/clawd/skills/ms365/ms365_cli.py mail read MESSAGE_ID
+python3 ms365_cli.py mail read MESSAGE_ID
 
 # Send email
-python3 /root/clawd/skills/ms365/ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" --body "Message body"
+python3 ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" --body "Message body"
 ```
 
 ### Calendar
 
 ```bash
 # List upcoming events
-python3 /root/clawd/skills/ms365/ms365_cli.py calendar list [--top N]
+python3 ms365_cli.py calendar list [--top N]
 
 # Create event
-python3 /root/clawd/skills/ms365/ms365_cli.py calendar create --subject "Meeting" --start "2026-01-15T10:00:00" --end "2026-01-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
+python3 ms365_cli.py calendar create --subject "Meeting" --start "2026-01-15T10:00:00" --end "2026-01-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
 ```
 
 ### OneDrive Files
 
 ```bash
 # List files in root
-python3 /root/clawd/skills/ms365/ms365_cli.py files list
+python3 ms365_cli.py files list
 
 # List files in folder
-python3 /root/clawd/skills/ms365/ms365_cli.py files list --path "Documents"
+python3 ms365_cli.py files list --path "Documents"
 ```
 
 ### To Do Tasks
 
 ```bash
 # List task lists
-python3 /root/clawd/skills/ms365/ms365_cli.py tasks lists
+python3 ms365_cli.py tasks lists
 
 # Get tasks from a list
-python3 /root/clawd/skills/ms365/ms365_cli.py tasks get LIST_ID
+python3 ms365_cli.py tasks get LIST_ID
 
 # Create task
-python3 /root/clawd/skills/ms365/ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-01-20"]
+python3 ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-01-20"]
 ```
 
 ### Contacts
 
 ```bash
 # List contacts
-python3 /root/clawd/skills/ms365/ms365_cli.py contacts list [--top N]
+python3 ms365_cli.py contacts list [--top N]
 
 # Search contacts
-python3 /root/clawd/skills/ms365/ms365_cli.py contacts search "John"
+python3 ms365_cli.py contacts search "John"
 ```
 
 ## Usage Examples

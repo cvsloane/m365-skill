@@ -22,22 +22,22 @@ Clone this repo to your Clawdbot skills directory:
 ```bash
 # For workspace skills
 cd <workspace>/skills
-git clone https://github.com/YOUR_USERNAME/m365-skill ms365
+git clone https://github.com/cvsloane/m365-skill ms365
 
 # Or for managed skills
 cd ~/.clawdbot/skills
-git clone https://github.com/YOUR_USERNAME/m365-skill ms365
+git clone https://github.com/cvsloane/m365-skill ms365
 ```
-
-Or download directly from releases.
 
 ### 2. Install Dependencies
 
-The skill will auto-install via npm, or manually:
+Install the MS 365 MCP server:
 
 ```bash
 npm install -g @softeria/ms-365-mcp-server
 ```
+
+The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
 
 ### 3. Set Up Authentication
 
@@ -171,13 +171,43 @@ mcporter call ms365.list_events
 
 ## Usage
 
-Once installed, simply talk to Clawdbot naturally:
+This skill provides two ways to interact with Microsoft 365:
+
+### 1. Via mcporter (Recommended for Clawdbot)
+
+Once configured, Clawdbot can access MS365 through mcporter automatically. Simply talk naturally:
 
 - "Check my email"
 - "What meetings do I have tomorrow?"
 - "Send an email to john@example.com about the project update"
 - "Add a task to review the budget by Friday"
 - "Show my OneDrive files"
+
+Direct mcporter usage:
+```bash
+# List emails
+mcporter call ms365.list_messages limit=10
+
+# List calendar events
+mcporter call ms365.list_events top=5
+```
+
+### 2. Via Python CLI Wrapper
+
+The included `ms365_cli.py` script provides a command-line interface for direct interaction:
+
+```bash
+# Check your email
+python3 ms365_cli.py mail list --top 10
+
+# View calendar
+python3 ms365_cli.py calendar list
+
+# Send an email
+python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "Hello"
+```
+
+See SKILL.md for complete CLI documentation.
 
 ## Troubleshooting
 
@@ -196,12 +226,14 @@ Once installed, simply talk to Clawdbot naturally:
 - For org features, ensure admin has approved the app
 
 ### Error: "Token expired" / "401 Unauthorized"
-- Re-authenticate via device code flow
-- Or refresh OAuth tokens
+- Re-authenticate via device code flow (run `scripts/auth-device.sh`)
+- Clear token cache and re-authenticate
+- Check if client secret has expired (if using Azure AD app)
 
 ### mcporter can't find ms365 server
 - Check mcporter.json configuration
-- Verify npm package is installed: `npx @softeria/ms-365-mcp-server --version`
+- Verify npm package is installed: `npm list -g @softeria/ms-365-mcp-server`
+- Test directly: `npx -y @softeria/ms-365-mcp-server` (should start without errors)
 
 ## Organization/Work Account Features
 
