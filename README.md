@@ -378,3 +378,7 @@ Start with minimal tools, expand on demand:
 ## License
 
 MIT License - Feel free to modify and share!
+
+## Development Status
+
+See [project_status.md](./project_status.md) for recent development activity and context.
