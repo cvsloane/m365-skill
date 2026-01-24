@@ -10,7 +10,20 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the Microsoft 365 MCP server via standard input/output.
+
+    Args:
+        method (str): The name of the tool/method to call on the MCP server.
+        params (dict, optional): Parameters for the method call. Defaults to None.
+
+    Returns:
+        dict: The result of the MCP server method call.
+
+    Raises:
+        subprocess.CalledProcessError: If the MCP server call fails.
+        json.JSONDecodeError: If the server response cannot be parsed.
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
