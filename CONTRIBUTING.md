@@ -11,11 +11,13 @@
 
 ## Development Setup
 
-1. Ensure you have Python 3.8+ installed
-2. Install dependencies:
+1. Install required dependencies:
    ```bash
    npm install -g @softeria/ms-365-mcp-server
    ```
+
+2. (Optional) For the Python CLI wrapper, ensure Python 3.8+ is installed
+   - No additional Python packages required (uses standard library only)
 
 ## Contribution Guidelines
 
