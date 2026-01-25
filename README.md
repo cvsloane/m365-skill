@@ -37,7 +37,7 @@ Install the MS 365 MCP server:
 npm install -g @softeria/ms-365-mcp-server
 ```
 
-The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
+The Python CLI wrapper (optional) requires Python 3.8+ with standard library only.
 
 ### 3. Set Up Authentication
 
@@ -207,6 +207,8 @@ python3 ms365_cli.py calendar list
 python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "Hello"
 ```
 
+> **Note**: The Python CLI is a standalone wrapper that communicates directly with the MCP server via stdio. It may use different internal tool names than what's exposed through mcporter.
+
 See SKILL.md for complete CLI documentation.
 
 ## Troubleshooting
@@ -299,6 +301,8 @@ Start with minimal tools, expand on demand:
 ```
 
 ## Available Tools Reference
+
+> **Note**: Tool names shown below use snake_case (e.g., `list_messages`) as exposed by the MCP server through mcporter. When using mcporter, prefix with `ms365.` like `mcporter call ms365.list_messages limit=5`.
 
 ### Email Tools
 | Tool | Description |
