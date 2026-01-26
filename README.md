@@ -2,6 +2,24 @@
 
 A Clawdbot skill for Microsoft 365 integration via the Graph API.
 
+## Quick Start
+
+1. Clone the repository
+2. Install dependencies: `npm install -g @softeria/ms-365-mcp-server`
+3. Set up Azure AD App or use device code flow
+4. Configure mcporter
+5. Start interacting with Microsoft 365!
+
+## Quick Example
+
+```bash
+# List recent emails
+mcporter call ms365.list_messages limit=5
+
+# Send an email
+mcporter call ms365.send_message to="user@example.com" subject="Hello" body="Test message"
+```
+
 ## Features
 
 - **Email**: Read, send, search, delete messages

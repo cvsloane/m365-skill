@@ -10,7 +10,16 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio.
+
+    Args:
+        method (str): The Microsoft 365 tool method to call.
+        params (dict, optional): Parameters for the method. Defaults to None.
+
+    Returns:
+        dict: Response from the MCP server, containing result or error.
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,7 +79,13 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format and print output in JSON format.
+
+    Args:
+        data (dict): The data dictionary to be printed.
+        compact (bool, optional): Whether to use compact JSON formatting. Defaults to False.
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
