@@ -1,6 +1,18 @@
 # MS 365 Skill for Clawdbot
 
-A Clawdbot skill for Microsoft 365 integration via the Graph API.
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/cvsloane/m365-skill/blob/main/LICENSE.md)
+
+## Quick Start
+
+A powerful Clawdbot skill for seamless Microsoft 365 integration via the Graph API. Interact with emails, calendars, files, and more using natural language or direct CLI commands.
+
+### 🚀 Key Features
+- Email management
+- Calendar coordination
+- OneDrive file handling
+- Task tracking
+- Contact management
+- Organization-level tools
 
 ## Features
 
