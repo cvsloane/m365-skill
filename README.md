@@ -37,7 +37,7 @@ Install the MS 365 MCP server:
 npm install -g @softeria/ms-365-mcp-server
 ```
 
-The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
+The Python CLI wrapper (optional) requires Python 3.8+ with standard library only.
 
 ### 3. Set Up Authentication
 
@@ -163,7 +163,7 @@ Or use HTTP mode:
 mcporter list ms365
 
 # Test email access
-mcporter call ms365.list_messages limit=5
+mcporter call ms365.list_messages top=5
 
 # Test calendar access
 mcporter call ms365.list_events
@@ -183,13 +183,16 @@ Once configured, Clawdbot can access MS365 through mcporter automatically. Simpl
 - "Add a task to review the budget by Friday"
 - "Show my OneDrive files"
 
-Direct mcporter usage:
+Direct mcporter usage (mcporter converts underscores to hyphens automatically):
 ```bash
 # List emails
-mcporter call ms365.list_messages limit=10
+mcporter call ms365.list_messages top=10
 
 # List calendar events
 mcporter call ms365.list_events top=5
+
+# Note: Use underscores in mcporter calls (list_messages),
+# but hyphens in direct MCP tool names (list-mail-messages)
 ```
 
 ### 2. Via Python CLI Wrapper
@@ -209,6 +212,30 @@ python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "
 
 See SKILL.md for complete CLI documentation.
 
+## Helper Scripts
+
+The `scripts/` directory contains utilities for managing the MS365 MCP server:
+
+- **`auth-device.sh`** - Interactive device code authentication for MS 365
+- **`check-auth.sh`** - Check authentication status and test connection
+- **`list-tools.sh`** - List all available MS 365 tools from the MCP server
+- **`start-server.sh`** - Start MS 365 MCP server in HTTP mode (supports org-mode, read-only, TOON format)
+
+Usage:
+```bash
+# Authenticate with device code
+./scripts/auth-device.sh
+
+# Check if authentication is working
+./scripts/check-auth.sh
+
+# List all available tools
+./scripts/list-tools.sh
+
+# Start HTTP server on port 3365
+./scripts/start-server.sh
+```
+
 ## Troubleshooting
 
 ### Error: "AADSTS700016: Application not found"
@@ -226,7 +253,12 @@ See SKILL.md for complete CLI documentation.
 - For org features, ensure admin has approved the app
 
 ### Error: "Token expired" / "401 Unauthorized"
-- Re-authenticate via device code flow (run `scripts/auth-device.sh`)
+- Re-authenticate via device code flow:
+  ```bash
+  ./scripts/auth-device.sh
+  # or
+  python3 ms365_cli.py login
+  ```
 - Clear token cache and re-authenticate
 - Check if client secret has expired (if using Azure AD app)
 
@@ -300,75 +332,77 @@ Start with minimal tools, expand on demand:
 
 ## Available Tools Reference
 
+**Note**: When calling via mcporter, replace hyphens with underscores in tool names (e.g., `list-mail-messages` becomes `list_messages`).
+
 ### Email Tools
 | Tool | Description |
 |------|-------------|
-| `list_messages` | List emails in a folder |
-| `get_message` | Get full email content |
-| `send_message` | Send a new email |
-| `reply_message` | Reply to an email |
-| `forward_message` | Forward an email |
-| `delete_message` | Delete an email |
-| `move_message` | Move email to folder |
-| `search_messages` | Search emails |
+| `list-mail-messages` | List emails in a folder |
+| `get-mail-message` | Get full email content |
+| `send-mail` | Send a new email |
+| `reply-to-mail-message` | Reply to an email |
+| `forward-mail-message` | Forward an email |
+| `delete-mail-message` | Delete an email |
+| `move-mail-message` | Move email to folder |
+| `search-mail-messages` | Search emails |
 
 ### Calendar Tools
 | Tool | Description |
 |------|-------------|
-| `list_events` | List calendar events |
-| `get_event` | Get event details |
-| `create_event` | Create new event |
-| `update_event` | Update existing event |
-| `delete_event` | Delete an event |
-| `list_calendars` | List all calendars |
+| `list-calendar-events` | List calendar events |
+| `get-calendar-event` | Get event details |
+| `create-calendar-event` | Create new event |
+| `update-calendar-event` | Update existing event |
+| `delete-calendar-event` | Delete an event |
+| `list-calendars` | List all calendars |
 
 ### OneDrive Tools
 | Tool | Description |
 |------|-------------|
-| `list_files` | List files in folder |
-| `get_file` | Get file metadata |
-| `download_file` | Download file content |
-| `upload_file` | Upload a file |
-| `create_folder` | Create new folder |
-| `delete_file` | Delete file/folder |
-| `search_files` | Search for files |
+| `list-folder-files` | List files in folder |
+| `get-file-metadata` | Get file metadata |
+| `download-file` | Download file content |
+| `upload-file` | Upload a file |
+| `create-folder` | Create new folder |
+| `delete-file-or-folder` | Delete file/folder |
+| `search-files` | Search for files |
 
 ### To Do Tools
 | Tool | Description |
 |------|-------------|
-| `list_task_lists` | List all task lists |
-| `list_tasks` | List tasks in a list |
-| `create_task` | Create new task |
-| `update_task` | Update task |
-| `complete_task` | Mark task complete |
-| `delete_task` | Delete a task |
+| `list-todo-task-lists` | List all task lists |
+| `list-todo-tasks` | List tasks in a list |
+| `create-todo-task` | Create new task |
+| `update-todo-task` | Update task |
+| `complete-todo-task` | Mark task complete |
+| `delete-todo-task` | Delete a task |
 
 ### Contact Tools
 | Tool | Description |
 |------|-------------|
-| `list_contacts` | List contacts |
-| `get_contact` | Get contact details |
-| `search_contacts` | Search contacts |
-| `create_contact` | Create new contact |
+| `list-outlook-contacts` | List contacts |
+| `get-outlook-contact` | Get contact details |
+| `search-people` | Search contacts |
+| `create-outlook-contact` | Create new contact |
 
 ### OneNote Tools
 | Tool | Description |
 |------|-------------|
-| `list_notebooks` | List notebooks |
-| `list_sections` | List notebook sections |
-| `list_pages` | List section pages |
-| `get_page_content` | Get page content |
+| `list-onenote-notebooks` | List notebooks |
+| `list-onenote-sections` | List notebook sections |
+| `list-onenote-pages` | List section pages |
+| `get-onenote-page-content` | Get page content |
 
 ### Organization Tools (--org-mode)
 | Tool | Description |
 |------|-------------|
-| `list_teams` | List Teams |
-| `list_channels` | List team channels |
-| `send_channel_message` | Post to channel |
-| `list_chats` | List chat conversations |
-| `send_chat_message` | Send chat message |
-| `list_sites` | List SharePoint sites |
-| `list_site_files` | List site documents |
+| `list-teams` | List Teams |
+| `list-team-channels` | List team channels |
+| `send-channel-message` | Post to channel |
+| `list-chats` | List chat conversations |
+| `send-chat-message` | Send chat message |
+| `list-sharepoint-sites` | List SharePoint sites |
+| `list-site-files` | List site documents |
 
 ## Support
 
