@@ -11,11 +11,12 @@
 
 ## Development Setup
 
-1. Ensure you have Python 3.8+ installed
-2. Install dependencies:
+1. Ensure you have Python 3.8+ installed (required for the CLI wrapper)
+2. Install the MCP server:
    ```bash
    npm install -g @softeria/ms-365-mcp-server
    ```
+3. For testing MCP integration, ensure mcporter is available
 
 ## Contribution Guidelines
 

@@ -79,6 +79,11 @@ def format_output(data: dict, compact: bool = False):
 def cmd_login(args):
     """Login via device code flow."""
     print("Starting device code login...")
+    print("You will be prompted to:")
+    print("  1. Open https://microsoft.com/devicelogin in a browser")
+    print("  2. Enter the code displayed")
+    print("  3. Sign in with your Microsoft account")
+    print("")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
