@@ -37,7 +37,7 @@ Install the MS 365 MCP server:
 npm install -g @softeria/ms-365-mcp-server
 ```
 
-The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
+The Python CLI wrapper (optional) requires Python 3.8+ with standard library only.
 
 ### 3. Set Up Authentication
 
@@ -163,10 +163,10 @@ Or use HTTP mode:
 mcporter list ms365
 
 # Test email access
-mcporter call ms365.list_messages limit=5
+mcporter call ms365.list-mail-messages limit=5
 
 # Test calendar access
-mcporter call ms365.list_events
+mcporter call ms365.list-calendar-events
 ```
 
 ## Usage
@@ -186,10 +186,10 @@ Once configured, Clawdbot can access MS365 through mcporter automatically. Simpl
 Direct mcporter usage:
 ```bash
 # List emails
-mcporter call ms365.list_messages limit=10
+mcporter call ms365.list-mail-messages limit=10
 
 # List calendar events
-mcporter call ms365.list_events top=5
+mcporter call ms365.list-calendar-events top=5
 ```
 
 ### 2. Via Python CLI Wrapper
@@ -226,7 +226,7 @@ See SKILL.md for complete CLI documentation.
 - For org features, ensure admin has approved the app
 
 ### Error: "Token expired" / "401 Unauthorized"
-- Re-authenticate via device code flow (run `scripts/auth-device.sh`)
+- Re-authenticate via device code flow: `./scripts/auth-device.sh` or `python3 ms365_cli.py login`
 - Clear token cache and re-authenticate
 - Check if client secret has expired (if using Azure AD app)
 
@@ -300,75 +300,79 @@ Start with minimal tools, expand on demand:
 
 ## Available Tools Reference
 
+These are MCP tools available via mcporter. Use with: `mcporter call ms365.<tool-name> [params]`
+
+**Note:** The Python CLI wrapper (`ms365_cli.py`) provides a higher-level interface. The tools below are the underlying MCP tools for direct mcporter usage.
+
 ### Email Tools
-| Tool | Description |
-|------|-------------|
-| `list_messages` | List emails in a folder |
-| `get_message` | Get full email content |
-| `send_message` | Send a new email |
-| `reply_message` | Reply to an email |
-| `forward_message` | Forward an email |
-| `delete_message` | Delete an email |
-| `move_message` | Move email to folder |
-| `search_messages` | Search emails |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-mail-messages` | List emails in a folder | `mail list` |
+| `get-mail-message` | Get full email content | `mail read` |
+| `send-mail` | Send a new email | `mail send` |
+| `reply-to-message` | Reply to an email | *(not in CLI)* |
+| `forward-message` | Forward an email | *(not in CLI)* |
+| `delete-message` | Delete an email | *(not in CLI)* |
+| `move-message` | Move email to folder | *(not in CLI)* |
+| `search-messages` | Search emails | *(not in CLI)* |
 
 ### Calendar Tools
-| Tool | Description |
-|------|-------------|
-| `list_events` | List calendar events |
-| `get_event` | Get event details |
-| `create_event` | Create new event |
-| `update_event` | Update existing event |
-| `delete_event` | Delete an event |
-| `list_calendars` | List all calendars |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-calendar-events` | List calendar events | `calendar list` |
+| `get-calendar-event` | Get event details | *(not in CLI)* |
+| `create-calendar-event` | Create new event | `calendar create` |
+| `update-calendar-event` | Update existing event | *(not in CLI)* |
+| `delete-calendar-event` | Delete an event | *(not in CLI)* |
+| `list-calendars` | List all calendars | *(not in CLI)* |
 
 ### OneDrive Tools
-| Tool | Description |
-|------|-------------|
-| `list_files` | List files in folder |
-| `get_file` | Get file metadata |
-| `download_file` | Download file content |
-| `upload_file` | Upload a file |
-| `create_folder` | Create new folder |
-| `delete_file` | Delete file/folder |
-| `search_files` | Search for files |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-folder-files` | List files in folder | `files list` |
+| `get-file-metadata` | Get file metadata | *(not in CLI)* |
+| `download-file` | Download file content | *(not in CLI)* |
+| `upload-file` | Upload a file | *(not in CLI)* |
+| `create-folder` | Create new folder | *(not in CLI)* |
+| `delete-file` | Delete file/folder | *(not in CLI)* |
+| `search-files` | Search for files | *(not in CLI)* |
 
 ### To Do Tools
-| Tool | Description |
-|------|-------------|
-| `list_task_lists` | List all task lists |
-| `list_tasks` | List tasks in a list |
-| `create_task` | Create new task |
-| `update_task` | Update task |
-| `complete_task` | Mark task complete |
-| `delete_task` | Delete a task |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-todo-task-lists` | List all task lists | `tasks lists` |
+| `list-todo-tasks` | List tasks in a list | `tasks get` |
+| `create-todo-task` | Create new task | `tasks create` |
+| `update-todo-task` | Update task | *(not in CLI)* |
+| `complete-todo-task` | Mark task complete | *(not in CLI)* |
+| `delete-todo-task` | Delete a task | *(not in CLI)* |
 
 ### Contact Tools
-| Tool | Description |
-|------|-------------|
-| `list_contacts` | List contacts |
-| `get_contact` | Get contact details |
-| `search_contacts` | Search contacts |
-| `create_contact` | Create new contact |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-outlook-contacts` | List contacts | `contacts list` |
+| `get-contact` | Get contact details | *(not in CLI)* |
+| `search-people` | Search contacts | `contacts search` |
+| `create-contact` | Create new contact | *(not in CLI)* |
 
 ### OneNote Tools
-| Tool | Description |
-|------|-------------|
-| `list_notebooks` | List notebooks |
-| `list_sections` | List notebook sections |
-| `list_pages` | List section pages |
-| `get_page_content` | Get page content |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-notebooks` | List notebooks | *(not in CLI)* |
+| `list-notebook-sections` | List notebook sections | *(not in CLI)* |
+| `list-section-pages` | List section pages | *(not in CLI)* |
+| `get-page-content` | Get page content | *(not in CLI)* |
 
 ### Organization Tools (--org-mode)
-| Tool | Description |
-|------|-------------|
-| `list_teams` | List Teams |
-| `list_channels` | List team channels |
-| `send_channel_message` | Post to channel |
-| `list_chats` | List chat conversations |
-| `send_chat_message` | Send chat message |
-| `list_sites` | List SharePoint sites |
-| `list_site_files` | List site documents |
+| MCP Tool | Description | CLI Equivalent |
+|----------|-------------|----------------|
+| `list-teams` | List Teams | *(not in CLI)* |
+| `list-team-channels` | List team channels | *(not in CLI)* |
+| `send-channel-message` | Post to channel | *(not in CLI)* |
+| `list-chats` | List chat conversations | *(not in CLI)* |
+| `send-chat-message` | Send chat message | *(not in CLI)* |
+| `list-sharepoint-sites` | List SharePoint sites | *(not in CLI)* |
+| `list-site-documents` | List site documents | *(not in CLI)* |
 
 ## Support
 
