@@ -2,6 +2,20 @@
 
 A Clawdbot skill for Microsoft 365 integration via the Graph API.
 
+## Quick Start
+
+```bash
+# 1. Install global dependencies
+npm install -g @softeria/ms-365-mcp-server
+
+# 2. Clone the skill
+git clone https://github.com/cvsloane/m365-skill ms365
+
+# 3. Configure Azure AD App (see full instructions below)
+# 4. Set environment variables
+# 5. Start using Microsoft 365 services!
+```
+
 ## Features
 
 - **Email**: Read, send, search, delete messages
@@ -14,6 +28,11 @@ A Clawdbot skill for Microsoft 365 integration via the Graph API.
 - **SharePoint** (org mode): Access sites and documents
 
 ## Installation
+
+### Requirements
+- Node.js 14+
+- Python 3.6+
+- A Microsoft 365 account
 
 ### 1. Copy Skill to Clawdbot
 
