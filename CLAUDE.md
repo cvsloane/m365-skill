@@ -25,7 +25,7 @@ The skill requires Azure AD credentials to function. Test with:
 ```bash
 # Inside clawdbot container
 mcporter list ms365
-mcporter call ms365.list_messages limit=5
+mcporter call ms365.list-mail-messages limit=5
 ```
 
 ## Environment Variables
