@@ -195,7 +195,7 @@ def cmd_contacts_list(args):
 
 def cmd_contacts_search(args):
     """Search contacts."""
-    result = call_mcp("search-people", {"search": args.query})
+    result = call_mcp("search-query", {"query": args.query})
     format_output(result)
 
 def main():
