@@ -303,24 +303,26 @@ Start with minimal tools, expand on demand:
 ### Email Tools
 | Tool | Description |
 |------|-------------|
-| `list_messages` | List emails in a folder |
-| `get_message` | Get full email content |
-| `send_message` | Send a new email |
-| `reply_message` | Reply to an email |
-| `forward_message` | Forward an email |
-| `delete_message` | Delete an email |
-| `move_message` | Move email to folder |
-| `search_messages` | Search emails |
+| `list-mail-messages` | List emails in inbox |
+| `list-mail-folders` | List email folders |
+| `list-mail-folder-messages` | List emails in specific folder |
+| `get-mail-message` | Get full email content |
+| `send-mail` | Send a new email |
+| `create-draft-email` | Create a draft email |
+| `delete-mail-message` | Delete an email |
+| `move-mail-message` | Move email to folder |
+| `search-query` | Search emails and other content |
 
 ### Calendar Tools
 | Tool | Description |
 |------|-------------|
-| `list_events` | List calendar events |
-| `get_event` | Get event details |
-| `create_event` | Create new event |
-| `update_event` | Update existing event |
-| `delete_event` | Delete an event |
-| `list_calendars` | List all calendars |
+| `list-calendars` | List all calendars |
+| `list-calendar-events` | List calendar events |
+| `get-calendar-event` | Get event details |
+| `get-calendar-view` | Get calendar view for date range |
+| `create-calendar-event` | Create new event |
+| `update-calendar-event` | Update existing event |
+| `delete-calendar-event` | Delete an event |
 
 ### OneDrive Tools
 | Tool | Description |
