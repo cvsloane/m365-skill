@@ -10,7 +10,25 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio using JSON-RPC protocol.
+    
+    Args:
+        method (str): The MCP tool method name to call
+        params (dict, optional): Method parameters. Defaults to None.
+        
+    Returns:
+        dict: Response from the MCP server, parsed as JSON or raw text
+        
+    Raises:
+        subprocess.TimeoutExpired: If the MCP server doesn't respond within 60 seconds
+        Exception: For other subprocess or JSON parsing errors
+        
+    Example:
+        >>> result = call_mcp("list_messages", {"top": 5})
+        >>> print(result)
+        {'value': [{'id': 'msg1', 'subject': 'Hello'}]}
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,34 +88,109 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format and display MCP server response output.
+    
+    Args:
+        data (dict): The response data from MCP server
+        compact (bool, optional): Use compact JSON formatting. Defaults to False.
+        
+    Example:
+        >>> format_output({"value": [{"id": "msg1"}]}, compact=True)
+        {"value": [{"id": "msg1"}]}
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
         print(json.dumps(data, indent=2))
 
 def cmd_login(args):
-    """Login via device code flow."""
+    """
+    Initiate device code flow authentication.
+    
+    This command starts the interactive authentication process using Microsoft's
+    device code flow. The user will be prompted to open a browser and enter
+    a code to authenticate their Microsoft account.
+    
+    Args:
+        args: argparse namespace (unused)
+        
+    Example:
+        >>> python3 ms365_cli.py login
+        Starting device code login...
+        To sign in, use a web browser to open the page https://microsoft.com/devicelogin
+        and enter the code XXXXXXXX to authenticate.
+    """
     print("Starting device code login...")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
-    """Check authentication status."""
+    """
+    Check current authentication status.
+    
+    Verifies if the user is authenticated and can access Microsoft 365 services.
+    Returns authentication status and account information.
+    
+    Args:
+        args: argparse namespace (unused)
+        
+    Example:
+        >>> python3 ms365_cli.py status
+        {"authenticated": true, "account": "user@example.com"}
+    """
     result = call_mcp("verify-login")
     format_output(result)
 
 def cmd_accounts(args):
-    """List cached accounts."""
+    """
+    List all cached authentication accounts.
+    
+    Displays all Microsoft accounts that have been cached for authentication.
+    Useful for managing multiple accounts.
+    
+    Args:
+        args: argparse namespace (unused)
+        
+    Example:
+        >>> python3 ms365_cli.py accounts
+        {"accounts": [{"id": "acc1", "email": "user@example.com"}]}
+    """
     result = call_mcp("list-accounts")
     format_output(result)
 
 def cmd_user(args):
-    """Get current user info."""
+    """
+    Get current authenticated user information.
+    
+    Retrieves details about the currently authenticated user including
+    display name, email address, and other profile information.
+    
+    Args:
+        args: argparse namespace (unused)
+        
+    Example:
+        >>> python3 ms365_cli.py user
+        {"user": {"displayName": "John Doe", "mail": "john@example.com"}}
+    """
     result = call_mcp("get-current-user")
     format_output(result)
 
 def cmd_mail_list(args):
-    """List emails."""
+    """
+    List emails in the user's mailbox.
+    
+    Retrieves a list of emails from the specified folder or inbox.
+    Supports pagination and folder filtering.
+    
+    Args:
+        args: argparse namespace containing:
+            top (int, optional): Maximum number of emails to return
+            folder (str, optional): Folder ID to list emails from
+            
+    Example:
+        >>> python3 ms365_cli.py mail list --top 10
+        {"value": [{"id": "msg1", "subject": "Hello", "from": {"emailAddress": {"address": "sender@example.com"}}}]}
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -107,12 +200,40 @@ def cmd_mail_list(args):
     format_output(result)
 
 def cmd_mail_read(args):
-    """Read a specific email."""
+    """
+    Read the full content of a specific email.
+    
+    Retrieves complete email details including subject, body, sender,
+    recipients, and attachments for the specified message ID.
+    
+    Args:
+        args: argparse namespace containing:
+            id (str): The message ID of the email to read
+            
+    Example:
+        >>> python3 ms365_cli.py mail read AAMkAG...=
+        {"id": "AAMkAG...=", "subject": "Meeting Tomorrow", "body": {"content": "Let's meet at 2 PM..."}}
+    """
     result = call_mcp("get-mail-message", {"messageId": args.id})
     format_output(result)
 
 def cmd_mail_send(args):
-    """Send an email."""
+    """
+    Send a new email message.
+    
+    Creates and sends an email to the specified recipients with the given
+    subject and body content.
+    
+    Args:
+        args: argparse namespace containing:
+            to (str): Recipient email address
+            subject (str): Email subject line
+            body (str): Email body content
+            
+    Example:
+        >>> python3 ms365_cli.py mail send --to "john@example.com" --subject "Hello" --body "How are you?"
+        {"id": "AAMkAG...=", "message": {"subject": "Hello"}}
+    """
     body = {
         "message": {
             "subject": args.subject,
@@ -129,7 +250,20 @@ def cmd_mail_send(args):
     format_output(result)
 
 def cmd_calendar_list(args):
-    """List calendar events."""
+    """
+    List calendar events.
+    
+    Retrieves upcoming calendar events from the user's calendar.
+    Supports filtering by number of events and date ranges.
+    
+    Args:
+        args: argparse namespace containing:
+            top (int, optional): Maximum number of events to return
+            
+    Example:
+        >>> python3 ms365_cli.py calendar list --top 5
+        {"value": [{"id": "evt1", "subject": "Team Meeting", "start": {"dateTime": "2026-01-15T10:00:00Z"}}]}
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -137,7 +271,24 @@ def cmd_calendar_list(args):
     format_output(result)
 
 def cmd_calendar_create(args):
-    """Create a calendar event."""
+    """
+    Create a new calendar event.
+    
+    Creates a calendar event with the specified subject, start/end times,
+    optional description, and timezone.
+    
+    Args:
+        args: argparse namespace containing:
+            subject (str): Event subject/title
+            start (str): Start time in ISO 8601 format
+            end (str): End time in ISO 8601 format
+            body (str, optional): Event description
+            timezone (str, optional): Timezone (default: America/Chicago)
+            
+    Example:
+        >>> python3 ms365_cli.py calendar create --subject "Team Meeting" --start "2026-01-15T10:00:00" --end "2026-01-15T11:00:00"
+        {"id": "AAMkAG...=", "subject": "Team Meeting"}
+    """
     body = {
         "subject": args.subject,
         "start": {
@@ -155,7 +306,20 @@ def cmd_calendar_create(args):
     format_output(result)
 
 def cmd_files_list(args):
-    """List OneDrive files."""
+    """
+    List files and folders in OneDrive.
+    
+    Retrieves files and folders from the specified OneDrive location.
+    Can list root directory or specific folder paths.
+    
+    Args:
+        args: argparse namespace containing:
+            path (str, optional): Folder path to list (default: root)
+            
+    Example:
+        >>> python3 ms365_cli.py files list --path "Documents"
+        {"value": [{"name": "report.pdf", "id": "file1", "file": {"mimeType": "application/pdf"}}]}
+    """
     params = {"driveId": "me"}
     if args.path:
         params['driveItemId'] = args.path
@@ -165,17 +329,57 @@ def cmd_files_list(args):
     format_output(result)
 
 def cmd_tasks_list(args):
-    """List To Do task lists."""
+    """
+    List all To Do task lists.
+    
+    Retrieves all available task lists in the user's Microsoft To Do account.
+    Each list can contain multiple tasks.
+    
+    Args:
+        args: argparse namespace (unused)
+        
+    Example:
+        >>> python3 ms365_cli.py tasks lists
+        {"value": [{"id": "list1", "displayName": "Tasks", "isOwner": true}]}
+    """
     result = call_mcp("list-todo-task-lists")
     format_output(result)
 
 def cmd_tasks_get(args):
-    """Get tasks from a list."""
+    """
+    Get tasks from a specific task list.
+    
+    Retrieves all tasks from the specified task list, including
+    completed and incomplete tasks.
+    
+    Args:
+        args: argparse namespace containing:
+            list_id (str): The ID of the task list
+            
+    Example:
+        >>> python3 ms365_cli.py tasks get "list1"
+        {"value": [{"id": "task1", "title": "Complete report", "status": "notStarted"}]}
+    """
     result = call_mcp("list-todo-tasks", {"todoTaskListId": args.list_id})
     format_output(result)
 
 def cmd_tasks_create(args):
-    """Create a new task."""
+    """
+    Create a new task in a task list.
+    
+    Creates a new task item in the specified task list with an optional
+    due date.
+    
+    Args:
+        args: argparse namespace containing:
+            list_id (str): The ID of the task list
+            title (str): Task title/description
+            due (str, optional): Due date in ISO 8601 format
+            
+    Example:
+        >>> python3 ms365_cli.py tasks create "list1" --title "Review budget" --due "2026-01-20"
+        {"id": "task1", "title": "Review budget", "status": "notStarted"}
+    """
     body = {"title": args.title}
     if args.due:
         body["dueDateTime"] = {"dateTime": args.due, "timeZone": "America/Chicago"}
@@ -186,7 +390,20 @@ def cmd_tasks_create(args):
     format_output(result)
 
 def cmd_contacts_list(args):
-    """List contacts."""
+    """
+    List contacts from Outlook.
+    
+    Retrieves contacts from the user's Outlook contacts folder.
+    Supports pagination to limit the number of results.
+    
+    Args:
+        args: argparse namespace containing:
+            top (int, optional): Maximum number of contacts to return
+            
+    Example:
+        >>> python3 ms365_cli.py contacts list --top 10
+        {"value": [{"id": "contact1", "displayName": "John Doe", "emailAddresses": [{"address": "john@example.com"}]}]}
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -194,7 +411,20 @@ def cmd_contacts_list(args):
     format_output(result)
 
 def cmd_contacts_search(args):
-    """Search contacts."""
+    """
+    Search for contacts by name or email.
+    
+    Searches the user's Outlook contacts using the specified query string.
+    Matches against display names, email addresses, and other contact fields.
+    
+    Args:
+        args: argparse namespace containing:
+            query (str): Search query string
+            
+    Example:
+        >>> python3 ms365_cli.py contacts search "John"
+        {"value": [{"id": "contact1", "displayName": "John Doe", "emailAddresses": [{"address": "john@example.com"}]}]}
+    """
     result = call_mcp("search-people", {"search": args.query})
     format_output(result)
 
