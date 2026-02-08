@@ -11,10 +11,15 @@
 
 ## Development Setup
 
-1. Ensure you have Python 3.8+ installed
-2. Install dependencies:
+1. Ensure you have Python 3.6+ installed (uses only standard library)
+2. Install MCP server for testing:
    ```bash
    npm install -g @softeria/ms-365-mcp-server
+   ```
+3. Set up Azure AD credentials (see README.md for instructions)
+4. Test the CLI:
+   ```bash
+   python3 ms365_cli.py status
    ```
 
 ## Contribution Guidelines
