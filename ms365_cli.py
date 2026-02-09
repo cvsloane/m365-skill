@@ -1,7 +1,31 @@
 #!/usr/bin/env python3
 """
 MS365 CLI - Command-line interface for Microsoft 365 via MCP server.
-Wraps the @softeria/ms-365-mcp-server for use with Clawdbot skills.
+
+This script wraps the @softeria/ms-365-mcp-server to provide a convenient
+command-line interface for Microsoft 365 operations. It's designed for use
+with Clawdbot skills but can be used standalone.
+
+Usage:
+    python3 ms365_cli.py <command> [options]
+
+Commands:
+    login          Authenticate via device code flow
+    status         Check authentication status
+    accounts       List cached accounts
+    user           Get current user info
+    mail           Email operations (list, read, send)
+    calendar       Calendar operations (list, create)
+    files          OneDrive file operations
+    tasks          To Do task operations
+    contacts       Contact operations
+
+Examples:
+    python3 ms365_cli.py login
+    python3 ms365_cli.py mail list --top 10
+    python3 ms365_cli.py calendar list
+
+For full documentation, see README.md and SKILL.md.
 """
 
 import subprocess
