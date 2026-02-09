@@ -10,7 +10,20 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio.
+    
+    Args:
+        method (str): The MCP method name to call
+        params (dict, optional): Method parameters. Defaults to None.
+        
+    Returns:
+        dict: Response from the MCP server or error information
+        
+    Raises:
+        subprocess.TimeoutExpired: If the command times out
+        Exception: For other subprocess errors
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,34 +83,67 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format output for display.
+    
+    Args:
+        data (dict): The data to format
+        compact (bool, optional): Use compact JSON format. Defaults to False.
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
         print(json.dumps(data, indent=2))
 
 def cmd_login(args):
-    """Login via device code flow."""
+    """
+    Login via device code flow.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     print("Starting device code login...")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
-    """Check authentication status."""
+    """
+    Check authentication status.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("verify-login")
     format_output(result)
 
 def cmd_accounts(args):
-    """List cached accounts."""
+    """
+    List cached accounts.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("list-accounts")
     format_output(result)
 
 def cmd_user(args):
-    """Get current user info."""
+    """
+    Get current user info.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("get-current-user")
     format_output(result)
 
 def cmd_mail_list(args):
-    """List emails."""
+    """
+    List emails.
+    
+    Args:
+        args: Command line arguments containing:
+            - top (int): Maximum number of emails to return
+            - folder (str): Folder ID to list from
+    """
     params = {}
     if args.top:
         params['top'] = args.top
