@@ -1,132 +1,188 @@
-# MS 365 Skill for Clawdbot
+# Microsoft 365 Skill for Clawdbot
 
-A Clawdbot skill for Microsoft 365 integration via the Graph API.
+> Seamlessly integrate Microsoft 365 services—Outlook, Calendar, OneDrive, Teams, and more—into your Clawdbot workflows via the Microsoft Graph API.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+  - [1. Copy Skill to Clawdbot](#1-copy-skill-to-clawdbot)
+  - [2. Install Dependencies](#2-install-dependencies)
+  - [3. Set Up Authentication](#3-set-up-authentication)
+  - [4. Configure mcporter](#4-configure-mcporter)
+  - [5. Verify Installation](#5-verify-installation)
+- [Usage](#usage)
+  - [Natural Language with Clawdbot](#natural-language-with-clawdbot)
+  - [Direct mcporter Commands](#direct-mcporter-commands)
+  - [Python CLI Wrapper](#python-cli-wrapper)
+- [Organization Features](#organization-features)
+- [Advanced Configuration](#advanced-configuration)
+- [Troubleshooting](#troubleshooting)
+- [Available Tools Reference](#available-tools-reference)
+- [Support & Resources](#support--resources)
+
+---
 
 ## Features
 
-- **Email**: Read, send, search, delete messages
-- **Calendar**: View, create, update, delete events
-- **OneDrive**: Browse, upload, download files
-- **To Do**: Manage tasks and lists
-- **Contacts**: Search and view contacts
-- **OneNote**: Access notebooks and pages
-- **Teams** (org mode): Send messages, access chats
-- **SharePoint** (org mode): Access sites and documents
+| Service | Capabilities |
+|---------|-------------|
+| **Email (Outlook)** | Read, compose, search, organize, and manage messages |
+| **Calendar** | View schedules, create meetings, set reminders |
+| **OneDrive** | Browse folders, upload documents, download files |
+| **To Do** | Create lists, manage tasks, track deadlines |
+| **Contacts** | Search address book, view contact details |
+| **OneNote** | Access notebooks, read pages and sections |
+| **Teams** *(org mode)* | Send messages, participate in chats and channels |
+| **SharePoint** *(org mode)* | Access sites, manage shared documents |
+
+---
+
+## Quick Start
+
+For the impatient—get running in 5 minutes:
+
+```bash
+# 1. Clone the skill
+cd ~/.clawdbot/skills && git clone https://github.com/cvsloane/m365-skill ms365
+
+# 2. Install the MCP server
+npm install -g @softeria/ms-365-mcp-server
+
+# 3. Authenticate (interactive device code flow)
+python3 ms365/ms365_cli.py login
+
+# 4. Test it
+mcporter call ms365.list_messages limit=5
+```
+
+That's it! No Azure setup required for personal use. For headless deployments or organization accounts, continue to the full installation guide below.
+
+---
 
 ## Installation
 
 ### 1. Copy Skill to Clawdbot
 
-Clone this repo to your Clawdbot skills directory:
+Choose the appropriate location based on your setup:
 
 ```bash
-# For workspace skills
-cd <workspace>/skills
+# For workspace-specific skills
+cd <your-workspace>/skills
 git clone https://github.com/cvsloane/m365-skill ms365
 
-# Or for managed skills
+# For global/user-wide skills
 cd ~/.clawdbot/skills
 git clone https://github.com/cvsloane/m365-skill ms365
 ```
 
 ### 2. Install Dependencies
 
-Install the MS 365 MCP server:
+The skill requires the Microsoft 365 MCP server from npm:
 
 ```bash
 npm install -g @softeria/ms-365-mcp-server
 ```
 
-The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
+**Requirements:**
+- Node.js 16+ (for the MCP server)
+- Python 3.6+ (standard library only—no pip dependencies needed)
 
 ### 3. Set Up Authentication
 
-#### Option A: Azure AD App (Recommended)
+Choose the method that fits your deployment scenario:
 
-This method works headless and is required for Docker deployments.
+#### Option A: Azure AD App Registration (Recommended for Production)
 
-**Step 1: Create Azure AD App Registration**
+This method is **required** for Docker containers, headless servers, or any automated deployment where interactive login isn't possible.
 
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to **Azure Active Directory** → **App registrations**
+**Step 1: Create the App Registration**
+
+1. Navigate to the [Azure Portal](https://portal.azure.com)
+2. Go to **Azure Active Directory** → **App registrations**
 3. Click **New registration**
-4. Configure:
-   - **Name**: `Clawdbot MS365` (or your choice)
+4. Configure as follows:
+   - **Name**: `Clawdbot MS365` (or your preferred name)
    - **Supported account types**:
-     - "Personal Microsoft accounts only" for personal use
-     - "Accounts in any organizational directory and personal" for both
-   - **Redirect URI**: Select "Web" and enter `http://localhost:3365/callback`
+     - *Personal Microsoft accounts only* → For personal Outlook/Live accounts
+     - *Accounts in any organizational directory and personal* → For work + personal
+   - **Redirect URI**: Select **Web** and enter `http://localhost:3365/callback`
 5. Click **Register**
 
 **Step 2: Configure API Permissions**
 
-1. In your app registration, go to **API permissions**
-2. Click **Add a permission** → **Microsoft Graph** → **Delegated permissions**
-3. Add these permissions:
+In your app registration, go to **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated permissions**:
+
+**Core Permissions (Required for Personal Use):**
 
 | Permission | Purpose |
 |------------|---------|
 | `Mail.ReadWrite` | Read and send emails |
-| `Mail.Send` | Send emails |
+| `Mail.Send` | Send emails (separate permission) |
 | `Calendars.ReadWrite` | Manage calendar events |
 | `Files.ReadWrite` | Access OneDrive files |
 | `Tasks.ReadWrite` | Manage To Do tasks |
 | `Contacts.Read` | Read contacts |
-| `Notes.Read` | Read OneNote notebooks |
-| `User.Read` | Basic profile info |
+| `Notes.Read` | Access OneNote notebooks |
+| `User.Read` | Basic profile information |
 
-For organization features, also add:
+**Organization Permissions (Enable with `--org-mode`):**
 
 | Permission | Purpose |
 |------------|---------|
-| `Chat.ReadWrite` | Teams messaging |
-| `Sites.Read.All` | SharePoint access |
+| `Chat.ReadWrite` | Teams direct messages |
 | `ChannelMessage.Send` | Post to Teams channels |
+| `Sites.Read.All` | SharePoint site access |
 
-4. Click **Grant admin consent** (if you have admin rights)
+After adding permissions, click **Grant admin consent** if you have administrative privileges.
 
-**Step 3: Create Client Secret**
+**Step 3: Create a Client Secret**
 
 1. Go to **Certificates & secrets**
 2. Click **New client secret**
-3. Add description: `Clawdbot`
-4. Choose expiration (recommend 24 months)
+3. Enter a description (e.g., `Clawdbot`)
+4. Choose expiration (24 months recommended)
 5. Click **Add**
-6. **IMPORTANT**: Copy the secret value immediately (shown only once!)
+6. **⚠️ Important**: Copy the secret value **immediately**—it's shown only once!
 
-**Step 4: Note Your Credentials**
+**Step 4: Collect Your Credentials**
 
 From the **Overview** page, note:
-- **Application (client) ID** → `MS365_MCP_CLIENT_ID`
-- **Directory (tenant) ID** → `MS365_MCP_TENANT_ID`
-  - Or use `consumers` for personal accounts only
-- **Client secret value** (from step 3) → `MS365_MCP_CLIENT_SECRET`
+- **Application (client) ID** → Set as `MS365_MCP_CLIENT_ID`
+- **Directory (tenant) ID** → Set as `MS365_MCP_TENANT_ID`
+  - Use `consumers` for personal accounts only
+- **Client secret value** (from Step 3) → Set as `MS365_MCP_CLIENT_SECRET`
 
-**Step 5: Set Environment Variables**
+**Step 5: Configure Environment Variables**
 
-Add to your environment (.env file, Docker, or your deployment platform):
+Add to your environment (`.env` file, Docker, or deployment platform):
 
 ```bash
-MS365_MCP_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-MS365_MCP_CLIENT_SECRET=your-secret-value
-MS365_MCP_TENANT_ID=consumers
+export MS365_MCP_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export MS365_MCP_CLIENT_SECRET="your-secret-value-here"
+export MS365_MCP_TENANT_ID="consumers"  # or your tenant ID
 ```
 
-#### Option B: Device Code Flow
+#### Option B: Device Code Flow (Quick Testing)
 
-For interactive/testing use. No Azure setup needed.
+For interactive testing without Azure setup:
 
-1. Run any MS365 command
-2. You'll see: "To sign in, use a web browser to open https://microsoft.com/devicelogin"
-3. Enter the provided code
+1. Run any MS365 command (e.g., `python3 ms365_cli.py mail list`)
+2. You'll see a prompt: *"To sign in, use a web browser to open https://microsoft.com/devicelogin"*
+3. Enter the code displayed
 4. Sign in with your Microsoft account
-5. Tokens are cached for future use
+5. Tokens are cached locally for future use
 
-**Note**: This doesn't work in pure headless environments.
+> **Note:** Device code flow requires interactive access and won't work in pure headless environments like Docker containers.
 
 ### 4. Configure mcporter
 
-Add MS365 server to mcporter config. Create/edit `~/.clawdbot/mcporter.json`:
+Add the MS365 server to your mcporter configuration. Edit `~/.clawdbot/mcporter.json`:
+
+**Stdio Mode (Recommended):**
 
 ```json
 {
@@ -144,7 +200,7 @@ Add MS365 server to mcporter config. Create/edit `~/.clawdbot/mcporter.json`:
 }
 ```
 
-Or use HTTP mode:
+**HTTP Mode (Alternative):**
 
 ```json
 {
@@ -156,121 +212,131 @@ Or use HTTP mode:
 }
 ```
 
+> **Pro tip:** Use HTTP mode when you want to run the MCP server separately or share it across multiple clients.
+
 ### 5. Verify Installation
 
+Confirm everything is working:
+
 ```bash
-# Check server is accessible
+# Check server connectivity
 mcporter list ms365
 
 # Test email access
 mcporter call ms365.list_messages limit=5
 
 # Test calendar access
-mcporter call ms365.list_events
-```
-
-## Usage
-
-This skill provides two ways to interact with Microsoft 365:
-
-### 1. Via mcporter (Recommended for Clawdbot)
-
-Once configured, Clawdbot can access MS365 through mcporter automatically. Simply talk naturally:
-
-- "Check my email"
-- "What meetings do I have tomorrow?"
-- "Send an email to john@example.com about the project update"
-- "Add a task to review the budget by Friday"
-- "Show my OneDrive files"
-
-Direct mcporter usage:
-```bash
-# List emails
-mcporter call ms365.list_messages limit=10
-
-# List calendar events
 mcporter call ms365.list_events top=5
 ```
 
-### 2. Via Python CLI Wrapper
+If these commands return data, you're ready to go!
 
-The included `ms365_cli.py` script provides a command-line interface for direct interaction:
+---
+
+## Usage
+
+### Natural Language with Clawdbot
+
+Once configured, interact with Microsoft 365 naturally through Clawdbot:
+
+| You say | Clawdbot does |
+|---------|---------------|
+| "Check my email" | Lists recent messages |
+| "What meetings do I have tomorrow?" | Shows tomorrow's calendar |
+| "Send an email to john@example.com about the project update" | Composes and sends the message |
+| "Add a task to review the budget by Friday" | Creates a To Do item |
+| "Show my OneDrive files" | Lists your files |
+| "Find emails from Sarah last week" | Searches with filters |
+
+### Direct mcporter Commands
+
+For scripting or precise control, use mcporter directly:
 
 ```bash
-# Check your email
-python3 ms365_cli.py mail list --top 10
+# List 10 most recent emails
+mcporter call ms365.list_messages limit=10
 
-# View calendar
-python3 ms365_cli.py calendar list
+# Get calendar for next week
+mcporter call ms365.list_events top=20
 
-# Send an email
-python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "Hello"
+# Search emails
+mcporter call ms365.search_messages query="from:boss@company.com"
+
+# Upload a file
+mcporter call ms365.upload_file path="/path/to/file.txt"
 ```
 
-See SKILL.md for complete CLI documentation.
+### Python CLI Wrapper
 
-## Troubleshooting
+The included `ms365_cli.py` provides a familiar command-line interface:
 
-### Error: "AADSTS700016: Application not found"
-- Verify `MS365_MCP_CLIENT_ID` is correct
-- Check the app registration exists in Azure portal
+```bash
+# Email operations
+python3 ms365_cli.py mail list --top 10
+python3 ms365_cli.py mail send --to "user@example.com" --subject "Hello" --body "Message"
 
-### Error: "AADSTS7000218: Invalid client secret"
-- Client secret may have expired
-- Create a new secret in Azure portal
-- Update `MS365_MCP_CLIENT_SECRET`
+# Calendar operations
+python3 ms365_cli.py calendar list
+python3 ms365_cli.py calendar create --subject "Team Standup" --start "2026-02-15T09:00:00" --end "2026-02-15T09:30:00"
 
-### Error: "Insufficient privileges"
-- Add required permissions in Azure portal
-- Grant admin consent if required
-- For org features, ensure admin has approved the app
+# OneDrive operations
+python3 ms365_cli.py files list --path "Documents"
 
-### Error: "Token expired" / "401 Unauthorized"
-- Re-authenticate via device code flow (run `scripts/auth-device.sh`)
-- Clear token cache and re-authenticate
-- Check if client secret has expired (if using Azure AD app)
+# Task management
+python3 ms365_cli.py tasks lists
+python3 ms365_cli.py tasks create "LIST_ID" --title "Review quarterly report" --due "2026-02-20"
+```
 
-### mcporter can't find ms365 server
-- Check mcporter.json configuration
-- Verify npm package is installed: `npm list -g @softeria/ms-365-mcp-server`
-- Test directly: `npx -y @softeria/ms-365-mcp-server` (should start without errors)
+> **Note:** When running from within Clawdbot, use the full path to the script (e.g., `/root/clawd/skills/ms365/ms365_cli.py`).
 
-## Organization/Work Account Features
+---
 
-To enable Teams, SharePoint, and shared mailbox access:
+## Organization Features
 
-1. Set environment variable:
-   ```bash
-   MS365_MCP_ORG_MODE=true
-   ```
+Unlock Teams, SharePoint, and enhanced collaboration features for work accounts:
 
-2. Update mcporter config to include the flag:
-   ```json
-   {
-     "servers": {
-       "ms365": {
-         "command": "npx",
-         "args": ["-y", "@softeria/ms-365-mcp-server", "--org-mode"]
-       }
-     }
-   }
-   ```
+### 1. Enable Organization Mode
 
-3. Ensure your Azure app has the required organization permissions
+Set the environment variable:
+
+```bash
+export MS365_MCP_ORG_MODE=true
+```
+
+### 2. Update mcporter Configuration
+
+```json
+{
+  "servers": {
+    "ms365": {
+      "command": "npx",
+      "args": ["-y", "@softeria/ms-365-mcp-server", "--org-mode"]
+    }
+  }
+}
+```
+
+### 3. Verify Azure Permissions
+
+Ensure your Azure app registration has the organization permissions listed in the authentication section, and that your IT admin has granted consent.
+
+---
 
 ## Advanced Configuration
 
-### Token-Efficient Output (TOON format)
+### Token-Efficient Output (TOON Format)
 
-Reduce token usage by 30-60%:
+Reduce API token usage by 30-60% with structured output:
 
 ```bash
-MS365_MCP_OUTPUT_FORMAT=toon
+export MS365_MCP_OUTPUT_FORMAT=toon
 ```
+
+Ideal for high-volume automation or when working with large datasets.
 
 ### Read-Only Mode
 
-Disable all write operations:
+Prevent accidental modifications by disabling all write operations:
 
 ```json
 {
@@ -285,7 +351,7 @@ Disable all write operations:
 
 ### Discovery Mode
 
-Start with minimal tools, expand on demand:
+Start with minimal tools and expand capabilities on demand—useful for constrained environments:
 
 ```json
 {
@@ -298,87 +364,190 @@ Start with minimal tools, expand on demand:
 }
 ```
 
+---
+
+## Troubleshooting
+
+### Common Errors
+
+#### "AADSTS700016: Application not found"
+
+**Cause:** The `MS365_MCP_CLIENT_ID` doesn't match an existing app registration.
+
+**Solution:**
+- Verify the client ID in the [Azure Portal](https://portal.azure.com) → App registrations
+- Ensure you're looking at the correct Azure AD tenant
+- Check for typos or extra spaces in the environment variable
+
+#### "AADSTS7000218: Invalid client secret"
+
+**Cause:** The client secret has expired or was entered incorrectly.
+
+**Solution:**
+1. Navigate to your app registration → Certificates & secrets
+2. Check if the secret has expired
+3. Create a new secret if needed
+4. Update `MS365_MCP_CLIENT_SECRET` with the new value
+
+#### "Insufficient privileges" / "403 Forbidden"
+
+**Cause:** Missing API permissions or admin consent not granted.
+
+**Solution:**
+- Add required permissions in Azure Portal → API permissions
+- Click **Grant admin consent** (if you're an admin)
+- For work accounts, ask your IT admin to approve the app
+
+#### "Token expired" / "401 Unauthorized"
+
+**Cause:** Authentication token has expired or been invalidated.
+
+**Solution:**
+- Re-authenticate using device code flow: `scripts/auth-device.sh`
+- Clear the token cache and re-authenticate
+- Check if the client secret has expired (for Azure AD app method)
+- Verify system clock is accurate (tokens are time-sensitive)
+
+#### "mcporter can't find ms365 server"
+
+**Cause:** Configuration issue or missing dependency.
+
+**Solution:**
+```bash
+# Verify mcporter.json syntax
+python3 -m json.tool ~/.clawdbot/mcporter.json
+
+# Check npm package is installed
+npm list -g @softeria/ms-365-mcp-server
+
+# Test server directly
+npx -y @softeria/ms-365-mcp-server --help
+```
+
+### Debug Mode
+
+Enable verbose logging to diagnose issues:
+
+```bash
+# Run server directly with debug output
+DEBUG=* npx -y @softeria/ms-365-mcp-server
+
+# Check authentication status
+python3 ms365_cli.py status
+```
+
+---
+
 ## Available Tools Reference
 
-### Email Tools
+### Email
+
 | Tool | Description |
 |------|-------------|
 | `list_messages` | List emails in a folder |
-| `get_message` | Get full email content |
+| `get_message` | Retrieve full email content |
 | `send_message` | Send a new email |
 | `reply_message` | Reply to an email |
 | `forward_message` | Forward an email |
-| `delete_message` | Delete an email |
-| `move_message` | Move email to folder |
-| `search_messages` | Search emails |
+| `delete_message` | Move to deleted items |
+| `move_message` | Move to another folder |
+| `search_messages` | Search with filters |
 
-### Calendar Tools
+### Calendar
+
 | Tool | Description |
 |------|-------------|
-| `list_events` | List calendar events |
+| `list_events` | List upcoming events |
 | `get_event` | Get event details |
-| `create_event` | Create new event |
-| `update_event` | Update existing event |
-| `delete_event` | Delete an event |
+| `create_event` | Schedule a new event |
+| `update_event` | Modify existing event |
+| `delete_event` | Cancel an event |
 | `list_calendars` | List all calendars |
 
-### OneDrive Tools
+### OneDrive
+
 | Tool | Description |
 |------|-------------|
-| `list_files` | List files in folder |
+| `list_files` | List files in a folder |
 | `get_file` | Get file metadata |
 | `download_file` | Download file content |
 | `upload_file` | Upload a file |
-| `create_folder` | Create new folder |
-| `delete_file` | Delete file/folder |
+| `create_folder` | Create a new folder |
+| `delete_file` | Delete file or folder |
 | `search_files` | Search for files |
 
-### To Do Tools
+### To Do
+
 | Tool | Description |
 |------|-------------|
 | `list_task_lists` | List all task lists |
-| `list_tasks` | List tasks in a list |
-| `create_task` | Create new task |
-| `update_task` | Update task |
-| `complete_task` | Mark task complete |
-| `delete_task` | Delete a task |
+| `list_tasks` | Get tasks from a list |
+| `create_task` | Add a new task |
+| `update_task` | Modify task details |
+| `complete_task` | Mark as completed |
+| `delete_task` | Remove a task |
 
-### Contact Tools
+### Contacts
+
 | Tool | Description |
 |------|-------------|
 | `list_contacts` | List contacts |
 | `get_contact` | Get contact details |
 | `search_contacts` | Search contacts |
-| `create_contact` | Create new contact |
+| `create_contact` | Add new contact |
 
-### OneNote Tools
+### OneNote
+
 | Tool | Description |
 |------|-------------|
-| `list_notebooks` | List notebooks |
+| `list_notebooks` | List all notebooks |
 | `list_sections` | List notebook sections |
 | `list_pages` | List section pages |
-| `get_page_content` | Get page content |
+| `get_page_content` | Read page content |
 
-### Organization Tools (--org-mode)
+### Organization (--org-mode)
+
 | Tool | Description |
 |------|-------------|
-| `list_teams` | List Teams |
+| `list_teams` | List Microsoft Teams |
 | `list_channels` | List team channels |
-| `send_channel_message` | Post to channel |
+| `send_channel_message` | Post to a channel |
 | `list_chats` | List chat conversations |
-| `send_chat_message` | Send chat message |
+| `send_chat_message` | Send direct message |
 | `list_sites` | List SharePoint sites |
 | `list_site_files` | List site documents |
 
-## Support
+---
 
-- MCP Server Issues: https://github.com/Softeria/ms-365-mcp-server/issues
-- Clawdbot Issues: https://github.com/clawdbot/clawdbot/issues
+## Support & Resources
+
+### Getting Help
+
+- **MCP Server Issues:** [Softeria/ms-365-mcp-server](https://github.com/Softeria/ms-365-mcp-server/issues)
+- **Clawdbot Issues:** [clawdbot/clawdbot](https://github.com/clawdbot/clawdbot/issues)
+- **Skill Issues:** [cvsloane/m365-skill](https://github.com/cvsloane/m365-skill/issues)
+
+### Useful Links
+
+- [Microsoft Graph API Documentation](https://docs.microsoft.com/en-us/graph/)
+- [Azure Portal](https://portal.azure.com)
+- [npm Package: @softeria/ms-365-mcp-server](https://www.npmjs.com/package/@softeria/ms-365-mcp-server)
+
+### Development
+
+For information about contributing or modifying this skill, see:
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
+- [CLAUDE.md](./CLAUDE.md) - Developer notes for Claude Code
+- [project_status.md](./project_status.md) - Recent development activity
+
+---
 
 ## License
 
-MIT License - Feel free to modify and share!
+MIT License — feel free to use, modify, and share.
 
-## Development Status
+---
 
-See [project_status.md](./project_status.md) for recent development activity and context.
+<p align="center">
+  <em>Built with ❤️ for the Clawdbot community</em>
+</p>
