@@ -4,7 +4,7 @@
 Access Microsoft 365 services - Email (Outlook), Calendar, OneDrive, To Do tasks, and Contacts via MS Graph API.
 
 ## Activation
-Activated when user mentions: outlook, email, calendar, onedrive, microsoft, office 365, o365, ms365, my meetings, my emails, schedule meeting, send email, check calendar, to do, microsoft tasks
+Activated when user mentions: outlook, email, calendar, onedrive, microsoft, office 365, o365, ms365, my meetings, my emails, schedule meeting, send email, check calendar, to do, microsoft tasks, onenote, teams, sharepoint, contacts
 
 ## Configuration
 Authentication is cached after first login. No environment variables required for device code flow.
@@ -77,7 +77,48 @@ python3 ms365_cli.py tasks lists
 python3 ms365_cli.py tasks get LIST_ID
 
 # Create task
-python3 ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-01-20"]
+python3 ms365_cli.py tasks create LIST_ID --title "Task title" --due "2026-01-20"
+```
+
+### OneNote
+
+```bash
+# List notebooks
+python3 ms365_cli.py onenote notebooks
+
+# List sections in a notebook
+python3 ms365_cli.py onenote sections NOTEBOOK_ID
+
+# List pages in a section
+python3 ms365_cli.py onenote pages SECTION_ID
+
+# Get page content
+python3 ms365_cli.py onenote content PAGE_ID
+```
+
+### Organization Features (requires --org-mode)
+
+```bash
+# List Teams
+python3 ms365_cli.py teams list
+
+# List channels in a team
+python3 ms365_cli.py teams channels TEAM_ID
+
+# Send message to channel
+python3 ms365_cli.py teams message TEAM_ID CHANNEL_ID --body "Hello team"
+
+# List chats
+python3 ms365_cli.py chats list
+
+# Send chat message
+python3 ms365_cli.py chats send CHAT_ID --body "Hello"
+
+# List SharePoint sites
+python3 ms365_cli.py sites list
+
+# List files in a site
+python3 ms365_cli.py sites files SITE_ID
 ```
 
 ### Contacts
@@ -117,6 +158,48 @@ When helping with Microsoft 365:
 - Default timezone is America/Chicago
 - When sending email, confirm recipient and content before sending
 - For tasks, list available task lists first so user can choose
+
+## Available Tools (via mcporter)
+
+When using mcporter directly, use these tool names:
+
+### Email
+- `list-mail-messages` - List emails with optional `top`, `folderId` params
+- `get-mail-message` - Get email by `messageId`
+- `send-mail` - Send email with `body` parameter
+- `reply-mail-message` - Reply to email
+- `forward-mail-message` - Forward email
+
+### Calendar
+- `list-calendar-events` - List events with optional `top` param
+- `create-calendar-event` - Create event with `body` parameter
+
+### OneDrive
+- `list-folder-files` - List files with `driveId`, `driveItemId` params
+
+### Tasks
+- `list-todo-task-lists` - List all task lists
+- `list-todo-tasks` - List tasks with `todoTaskListId` param
+- `create-todo-task` - Create task with `todoTaskListId`, `body` params
+
+### Contacts
+- `list-outlook-contacts` - List contacts with optional `top` param
+- `search-people` - Search contacts with `search` param
+
+### OneNote
+- `list-onenote-notebooks` - List notebooks
+- `list-onenote-sections` - List sections with `notebookId` param
+- `list-onenote-pages` - List pages with `sectionId` param
+- `get-onenote-page-content` - Get page content with `pageId` param
+
+### Organization (requires --org-mode)
+- `list-teams` - List Teams
+- `list-team-channels` - List channels with `teamId` param
+- `send-channel-message` - Send message with `teamId`, `channelId`, `body` params
+- `list-chats` - List chat conversations
+- `send-chat-message` - Send message with `chatId`, `body` params
+- `list-sharepoint-sites` - List SharePoint sites
+- `list-site-files` - List files with `siteId` param
 
 ## Attribution
 

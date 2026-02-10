@@ -198,6 +198,68 @@ def cmd_contacts_search(args):
     result = call_mcp("search-people", {"search": args.query})
     format_output(result)
 
+def cmd_onenote_notebooks(args):
+    """List OneNote notebooks."""
+    result = call_mcp("list-onenote-notebooks")
+    format_output(result)
+
+def cmd_onenote_sections(args):
+    """List sections in a notebook."""
+    result = call_mcp("list-onenote-sections", {"notebookId": args.notebook_id})
+    format_output(result)
+
+def cmd_onenote_pages(args):
+    """List pages in a section."""
+    result = call_mcp("list-onenote-pages", {"sectionId": args.section_id})
+    format_output(result)
+
+def cmd_onenote_content(args):
+    """Get page content."""
+    result = call_mcp("get-onenote-page-content", {"pageId": args.page_id})
+    format_output(result)
+
+def cmd_teams_list(args):
+    """List Teams."""
+    result = call_mcp("list-teams")
+    format_output(result)
+
+def cmd_teams_channels(args):
+    """List channels in a team."""
+    result = call_mcp("list-team-channels", {"teamId": args.team_id})
+    format_output(result)
+
+def cmd_teams_message(args):
+    """Send message to channel."""
+    result = call_mcp("send-channel-message", {
+        "teamId": args.team_id,
+        "channelId": args.channel_id,
+        "body": args.body
+    })
+    format_output(result)
+
+def cmd_chats_list(args):
+    """List chats."""
+    result = call_mcp("list-chats")
+    format_output(result)
+
+def cmd_chats_send(args):
+    """Send chat message."""
+    result = call_mcp("send-chat-message", {
+        "chatId": args.chat_id,
+        "body": args.body
+    })
+    format_output(result)
+
+def cmd_sites_list(args):
+    """List SharePoint sites."""
+    result = call_mcp("list-sharepoint-sites")
+    format_output(result)
+
+def cmd_sites_files(args):
+    """List files in a site."""
+    result = call_mcp("list-site-files", {"siteId": args.site_id})
+    format_output(result)
+
 def main():
     parser = argparse.ArgumentParser(description="MS365 CLI for Clawdbot")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
@@ -286,6 +348,65 @@ def main():
     contacts_search = contacts_sub.add_parser('search', help='Search contacts')
     contacts_search.add_argument('query', help='Search query')
     contacts_search.set_defaults(func=cmd_contacts_search)
+
+    # OneNote commands
+    onenote_p = subparsers.add_parser('onenote', help='OneNote commands')
+    onenote_sub = onenote_p.add_subparsers(dest='onenote_cmd')
+
+    onenote_notebooks = onenote_sub.add_parser('notebooks', help='List notebooks')
+    onenote_notebooks.set_defaults(func=cmd_onenote_notebooks)
+
+    onenote_sections = onenote_sub.add_parser('sections', help='List sections')
+    onenote_sections.add_argument('notebook_id', help='Notebook ID')
+    onenote_sections.set_defaults(func=cmd_onenote_sections)
+
+    onenote_pages = onenote_sub.add_parser('pages', help='List pages')
+    onenote_pages.add_argument('section_id', help='Section ID')
+    onenote_pages.set_defaults(func=cmd_onenote_pages)
+
+    onenote_content = onenote_sub.add_parser('content', help='Get page content')
+    onenote_content.add_argument('page_id', help='Page ID')
+    onenote_content.set_defaults(func=cmd_onenote_content)
+
+    # Teams commands
+    teams_p = subparsers.add_parser('teams', help='Teams commands')
+    teams_sub = teams_p.add_subparsers(dest='teams_cmd')
+
+    teams_list = teams_sub.add_parser('list', help='List Teams')
+    teams_list.set_defaults(func=cmd_teams_list)
+
+    teams_channels = teams_sub.add_parser('channels', help='List channels')
+    teams_channels.add_argument('team_id', help='Team ID')
+    teams_channels.set_defaults(func=cmd_teams_channels)
+
+    teams_message = teams_sub.add_parser('message', help='Send channel message')
+    teams_message.add_argument('team_id', help='Team ID')
+    teams_message.add_argument('channel_id', help='Channel ID')
+    teams_message.add_argument('--body', required=True, help='Message body')
+    teams_message.set_defaults(func=cmd_teams_message)
+
+    # Chats commands
+    chats_p = subparsers.add_parser('chats', help='Chats commands')
+    chats_sub = chats_p.add_subparsers(dest='chats_cmd')
+
+    chats_list = chats_sub.add_parser('list', help='List chats')
+    chats_list.set_defaults(func=cmd_chats_list)
+
+    chats_send = chats_sub.add_parser('send', help='Send chat message')
+    chats_send.add_argument('chat_id', help='Chat ID')
+    chats_send.add_argument('--body', required=True, help='Message body')
+    chats_send.set_defaults(func=cmd_chats_send)
+
+    # Sites commands
+    sites_p = subparsers.add_parser('sites', help='SharePoint sites commands')
+    sites_sub = sites_p.add_subparsers(dest='sites_cmd')
+
+    sites_list = sites_sub.add_parser('list', help='List sites')
+    sites_list.set_defaults(func=cmd_sites_list)
+
+    sites_files = sites_sub.add_parser('files', help='List site files')
+    sites_files.add_argument('site_id', help='Site ID')
+    sites_files.set_defaults(func=cmd_sites_files)
 
     args = parser.parse_args()
 
