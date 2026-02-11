@@ -10,7 +10,19 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """Call the MCP server via stdio.
+    
+    Args:
+        method (str): The MCP method name to call
+        params (dict, optional): Method parameters. Defaults to None.
+        
+    Returns:
+        dict: The response from the MCP server, or error information
+        
+    Raises:
+        subprocess.TimeoutExpired: If the MCP server doesn't respond within 60 seconds
+        Exception: For other subprocess-related errors
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",

@@ -382,3 +382,60 @@ MIT License - Feel free to modify and share!
 ## Development Status
 
 See [project_status.md](./project_status.md) for recent development activity and context.
+
+## Architecture Overview
+
+### System Architecture
+
+This skill implements a three-tier architecture:
+
+1. **Clawbot Interface Layer** - Natural language processing and command routing
+2. **MCP Bridge Layer** - mcporter handles communication with the MCP server
+3. **Microsoft Graph API Layer** - Direct integration with Microsoft 365 services
+
+### Data Flow
+
+```
+User Request → Clawbot → mcporter → @softeria/ms-365-mcp-server → Microsoft Graph API → MS365 Service
+```
+
+### Key Components
+
+- **ms365_cli.py** - Python CLI wrapper for direct MCP server interaction
+- **mcporter** - Bridge between Clawbot and MCP server
+- **@softeria/ms-365-mcp-server** - Microsoft 365 MCP server implementation
+- **Microsoft Graph API** - Backend API for all Microsoft 365 operations
+
+### Security Model
+
+- **Device Code Flow**: Interactive authentication for development/testing
+- **Azure AD App**: Headless authentication for production/deployment
+- **Token Caching**: Credentials cached after initial authentication
+- **Environment Variables**: Secure storage of sensitive credentials
+
+## Environment Setup
+
+### Prerequisites
+
+- **Node.js** (v14+ or v16+) - Required for MCP server
+- **Python 3.6+** - Required for CLI wrapper
+- **Microsoft Account** - For authentication
+- **Azure AD App Registration** (for production) - See authentication section
+
+### Development Environment Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/cvsloane/m365-skill.git
+cd m365-skill
+
+# Install Node.js dependencies (if not already installed)
+npm install -g @softeria/ms-365-mcp-server
+
+# Test the CLI
+python3 ms365_cli.py --help
+```
+
+### Production Environment Setup
+
+For production deployments, follow the Azure AD authentication setup in the Installation section.
