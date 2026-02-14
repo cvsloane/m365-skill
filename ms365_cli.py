@@ -10,7 +10,19 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio using JSON-RPC protocol.
+    
+    Args:
+        method (str): The MCP method name to call
+        params (dict, optional): Method parameters. Defaults to None.
+        
+    Returns:
+        dict: The response from the MCP server, containing either:
+            - 'result': Successful response data
+            - 'error': Error information
+            - 'text': Raw text response
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,34 +82,89 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format and display MCP server response data.
+    
+    Args:
+        data (dict): The response data from MCP server
+        compact (bool, optional): Whether to use compact JSON formatting. 
+                                 Defaults to False (pretty-printed).
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
         print(json.dumps(data, indent=2))
 
 def cmd_login(args):
-    """Login via device code flow."""
+    """
+    Authenticate via device code flow.
+    
+    This command initiates an interactive authentication process where:
+    1. User opens a browser to microsoft.com/devicelogin
+    2. Enters the displayed code
+    3. Signs in with their Microsoft account
+    4. Tokens are cached for future use
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     print("Starting device code login...")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
-    """Check authentication status."""
+    """
+    Check current authentication status with Microsoft 365.
+    
+    Verifies if the user is authenticated and can access Microsoft 365 services.
+    Returns authentication status and account information.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("verify-login")
     format_output(result)
 
 def cmd_accounts(args):
-    """List cached accounts."""
+    """
+    List all cached Microsoft accounts.
+    
+    Shows accounts that have been authenticated and cached for quick access.
+    Useful for managing multiple Microsoft accounts.
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("list-accounts")
     format_output(result)
 
 def cmd_user(args):
-    """Get current user info."""
+    """
+    Get current authenticated user information.
+    
+    Retrieves details about the currently authenticated user including:
+    - Display name
+    - Email address
+    - User ID
+    - Other profile information
+    
+    Args:
+        args: Command line arguments (unused)
+    """
     result = call_mcp("get-current-user")
     format_output(result)
 
 def cmd_mail_list(args):
-    """List emails."""
+    """
+    List emails from the user's mailbox.
+    
+    Retrieves recent emails from the specified folder (default: Inbox).
+    Supports pagination and folder selection.
+    
+    Args:
+        args: Command line arguments containing:
+            - top (int): Maximum number of emails to return (default: 10)
+            - folder (str): Folder ID to list emails from (default: Inbox)
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -107,12 +174,32 @@ def cmd_mail_list(args):
     format_output(result)
 
 def cmd_mail_read(args):
-    """Read a specific email."""
+    """
+    Read the full content of a specific email.
+    
+    Retrieves complete email details including subject, body, sender,
+    recipients, and attachments (if any).
+    
+    Args:
+        args: Command line arguments containing:
+            - id (str): The message ID of the email to retrieve
+    """
     result = call_mcp("get-mail-message", {"messageId": args.id})
     format_output(result)
 
 def cmd_mail_send(args):
-    """Send an email."""
+    """
+    Send a new email message.
+    
+    Creates and sends an email with the specified subject, body, and recipient.
+    Supports basic text emails with single recipient.
+    
+    Args:
+        args: Command line arguments containing:
+            - to (str): Recipient email address (required)
+            - subject (str): Email subject (required)
+            - body (str): Email body content (required)
+    """
     body = {
         "message": {
             "subject": args.subject,
@@ -129,7 +216,16 @@ def cmd_mail_send(args):
     format_output(result)
 
 def cmd_calendar_list(args):
-    """List calendar events."""
+    """
+    List upcoming calendar events.
+    
+    Retrieves events from the user's default calendar.
+    Supports pagination to limit the number of returned events.
+    
+    Args:
+        args: Command line arguments containing:
+            - top (int): Maximum number of events to return (default: 10)
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -137,7 +233,20 @@ def cmd_calendar_list(args):
     format_output(result)
 
 def cmd_calendar_create(args):
-    """Create a calendar event."""
+    """
+    Create a new calendar event.
+    
+    Creates an event in the user's default calendar with the specified
+    subject, start/end times, and optional description.
+    
+    Args:
+        args: Command line arguments containing:
+            - subject (str): Event title (required)
+            - start (str): Start time in ISO 8601 format (required)
+            - end (str): End time in ISO 8601 format (required)
+            - body (str, optional): Event description
+            - timezone (str): Timezone for the event (default: America/Chicago)
+    """
     body = {
         "subject": args.subject,
         "start": {
@@ -155,7 +264,16 @@ def cmd_calendar_create(args):
     format_output(result)
 
 def cmd_files_list(args):
-    """List OneDrive files."""
+    """
+    List files and folders in OneDrive.
+    
+    Retrieves the contents of a specified OneDrive location.
+    Defaults to listing the root directory if no path is specified.
+    
+    Args:
+        args: Command line arguments containing:
+            - path (str, optional): Folder path to list (default: root)
+    """
     params = {"driveId": "me"}
     if args.path:
         params['driveItemId'] = args.path
