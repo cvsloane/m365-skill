@@ -25,7 +25,7 @@ The skill requires Azure AD credentials to function. Test with:
 ```bash
 # Inside clawdbot container
 mcporter list ms365
-mcporter call ms365.list_messages limit=5
+mcporter call ms365.list-mail-messages limit=5
 ```
 
 ## Environment Variables
@@ -59,5 +59,5 @@ These must be set in Coolify for the clawdbot container:
 
 5. Test:
    ```bash
-   ssh root@apps-vps "docker exec clawdbot mcporter list ms365"
+   ssh root@apps-vps "docker exec clawdbot mcporter call ms365.list-mail-messages limit=5"
    ```
