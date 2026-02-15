@@ -10,7 +10,20 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio using JSON-RPC protocol.
+    
+    Args:
+        method (str): The MCP tool name to call
+        params (dict, optional): Tool parameters. Defaults to None.
+    
+    Returns:
+        dict: Response data from the MCP server or error information
+    
+    Example:
+        >>> result = call_mcp("list_messages", {"top": 10})
+        >>> print(result)
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,19 +83,48 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format and display output data in JSON format.
+    
+    Args:
+        data (dict): Data to format and display
+        compact (bool): Whether to use compact JSON formatting. Defaults to False.
+    
+    Example:
+        >>> format_output({"success": True, "data": []}, compact=True)
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
         print(json.dumps(data, indent=2))
 
 def cmd_login(args):
-    """Login via device code flow."""
+    """
+    Login via device code flow for interactive authentication.
+    
+    Args:
+        args: Parsed command line arguments
+    
+    This function starts the device code authentication process which requires
+    the user to visit a URL and enter a code to complete authentication.
+    """
     print("Starting device code login...")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
-    """Check authentication status."""
+    """
+    Check authentication status and verify connection to MCP server.
+    
+    Args:
+        args: Parsed command line arguments
+    
+    Returns:
+        dict: Authentication status information from the MCP server
+    
+    Example:
+        >>> status = cmd_status(args)
+        >>> print(status.get('success', False))
+    """
     result = call_mcp("verify-login")
     format_output(result)
 

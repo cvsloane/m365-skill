@@ -39,6 +39,37 @@ npm install -g @softeria/ms-365-mcp-server
 
 The Python CLI wrapper (optional) requires Python 3.6+ with standard library only.
 
+**Environment Setup:**
+
+#### Development Environment
+```bash
+# Install Node.js (if not already installed)
+curl -fsSL https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz | tar -xJ -C /tmp
+export PATH="/tmp/node-v20.10.0-linux-x64/bin:$PATH"
+
+# Install the MCP server globally
+npm install -g @softeria/ms-365-mcp-server
+
+# Verify installation
+npx -y @softeria/ms-365-mcp-server --help
+```
+
+#### Production/Docker Environment
+```bash
+# For Docker deployments, ensure Node.js is installed in the base image
+# and the MCP server is available in the PATH
+
+# Test MCP server availability
+which npx && npx -y @softeria/ms-365-mcp-server --version
+```
+
+#### System Requirements
+- **Node.js**: v16+ (recommended v20+)
+- **npm**: v8+ (comes with Node.js)
+- **Python**: 3.6+ (for CLI wrapper only)
+- **Memory**: 512MB minimum (1GB recommended)
+- **Network**: Internet access to Microsoft Graph API endpoints
+
 ### 3. Set Up Authentication
 
 #### Option A: Azure AD App (Recommended)
@@ -257,6 +288,143 @@ To enable Teams, SharePoint, and shared mailbox access:
    ```
 
 3. Ensure your Azure app has the required organization permissions
+
+## Configuration
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+#### Required for Azure AD Authentication
+```bash
+MS365_MCP_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+MS365_MCP_CLIENT_SECRET=your-secret-value
+MS365_MCP_TENANT_ID=consumers  # or your tenant ID
+```
+
+#### Optional Configuration
+```bash
+# Enable organization features (Teams, SharePoint)
+MS365_MCP_ORG_MODE=true
+
+# Enable token-efficient output format (reduces token usage by 30-60%)
+MS365_MCP_OUTPUT_FORMAT=toon
+
+# Disable all write operations (read-only mode)
+MS365_MCP_READ_ONLY=true
+
+# Set custom HTTP server port (default: 3365)
+MS365_MCP_PORT=3365
+
+# Enable discovery mode (minimal tools, expand on demand)
+MS365_MCP_DISCOVERY=true
+```
+
+### McPorter Configuration
+
+Create or edit `~/.clawdbot/mcporter.json`:
+
+#### Basic Configuration
+```json
+{
+  "servers": {
+    "ms365": {
+      "command": "npx",
+      "args": ["-y", "@softeria/ms-365-mcp-server"],
+      "env": {
+        "MS365_MCP_CLIENT_ID": "${MS365_MCP_CLIENT_ID}",
+        "MS365_MCP_CLIENT_SECRET": "${MS365_MCP_CLIENT_SECRET}",
+        "MS365_MCP_TENANT_ID": "${MS365_MCP_TENANT_ID}"
+      }
+    }
+  }
+}
+```
+
+#### Advanced Configuration
+```json
+{
+  "servers": {
+    "ms365": {
+      "command": "npx",
+      "args": [
+        "-y", 
+        "@softeria/ms-365-mcp-server",
+        "--org-mode",
+        "--toon",
+        "--port", "3365"
+      ],
+      "env": {
+        "MS365_MCP_CLIENT_ID": "${MS365_MCP_CLIENT_ID}",
+        "MS365_MCP_CLIENT_SECRET": "${MS365_MCP_CLIENT_SECRET}",
+        "MS365_MCP_TENANT_ID": "${MS365_MCP_TENANT_ID}",
+        "MS365_MCP_ORG_MODE": "true",
+        "MS365_MCP_OUTPUT_FORMAT": "toon"
+      }
+    }
+  }
+}
+```
+
+#### HTTP Mode Configuration
+```json
+{
+  "servers": {
+    "ms365": {
+      "url": "http://localhost:3365"
+    }
+  }
+}
+```
+
+### Docker Configuration
+
+#### Docker Compose Example
+```yaml
+version: '3.8'
+services:
+  clawdbot:
+    image: clawdbot/clawdbot:latest
+    environment:
+      - MS365_MCP_CLIENT_ID=${MS365_MCP_CLIENT_ID}
+      - MS365_MCP_CLIENT_SECRET=${MS365_MCP_CLIENT_SECRET}
+      - MS365_MCP_TENANT_ID=${MS365_MCP_TENANT_ID}
+      - MS365_MCP_ORG_MODE=true
+    volumes:
+      - ~/.clawdbot:/root/.clawdbot
+    depends_on:
+      - ms365-server
+
+  ms365-server:
+    image: node:20
+    command: sh -c "npm install -g @softeria/ms-365-mcp-server && npx -y @softeria/ms-365-mcp-server --org-mode --toon --port 3365"
+    environment:
+      - MS365_MCP_CLIENT_ID=${MS365_MCP_CLIENT_ID}
+      - MS365_MCP_CLIENT_SECRET=${MS365_MCP_CLIENT_SECRET}
+      - MS365_MCP_TENANT_ID=${MS365_MCP_TENANT_ID}
+      - MS365_MCP_ORG_MODE=true
+      - MS365_MCP_OUTPUT_FORMAT=toon
+    ports:
+      - "3365:3365"
+```
+
+### Configuration Validation
+
+Test your configuration:
+
+```bash
+# Check environment variables
+echo "Client ID: ${MS365_MCP_CLIENT_ID:0:8}..."
+echo "Client Secret: ***"
+echo "Tenant ID: ${MS365_MCP_TENANT_ID}"
+
+# Test MCP server connection
+mcporter list ms365
+
+# Test specific functionality
+mcporter call ms365.list_messages limit=1
+mcporter call ms365.list_events top=1
+```
 
 ## Advanced Configuration
 
