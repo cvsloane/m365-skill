@@ -29,7 +29,7 @@ echo ""
 
 # Try to list messages as auth test
 echo "Testing authentication..."
-if mcporter call ms365.list_messages limit=1 2>/dev/null; then
+if mcporter call ms365.list_messages top=1 2>/dev/null; then
   echo ""
   echo "Authentication successful!"
 else
