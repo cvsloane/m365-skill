@@ -10,7 +10,20 @@ import sys
 import argparse
 
 def call_mcp(method: str, params: dict = None) -> dict:
-    """Call the MCP server via stdio."""
+    """
+    Call the MCP server via stdio using JSON-RPC protocol.
+    
+    Args:
+        method (str): The MCP tool method name to call
+        params (dict, optional): Method parameters. Defaults to None.
+        
+    Returns:
+        dict: The response from the MCP server, parsed as JSON or raw text
+        
+    Raises:
+        subprocess.TimeoutExpired: If the request times out after 60 seconds
+        Exception: For other subprocess execution errors
+    """
     # Initialize request
     init_msg = json.dumps({
         "jsonrpc": "2.0",
@@ -70,34 +83,83 @@ def call_mcp(method: str, params: dict = None) -> dict:
         return {"error": str(e)}
 
 def format_output(data: dict, compact: bool = False):
-    """Format output for display."""
+    """
+    Format and display MCP server response data.
+    
+    Args:
+        data (dict): The response data from MCP server
+        compact (bool, optional): Whether to use compact JSON formatting. Defaults to False.
+    """
     if compact:
         print(json.dumps(data, indent=2))
     else:
         print(json.dumps(data, indent=2))
 
 def cmd_login(args):
-    """Login via device code flow."""
+    """
+    Initiate device code flow authentication for Microsoft 365.
+    
+    This command starts an interactive authentication process where users:
+    1. Open a browser to https://microsoft.com/devicelogin
+    2. Enter the displayed code
+    3. Sign in with their Microsoft account
+    
+    Args:
+        args: argparse namespace (unused in this command)
+    """
     print("Starting device code login...")
     subprocess.run(["npx", "-y", "@softeria/ms-365-mcp-server", "--login"])
 
 def cmd_status(args):
-    """Check authentication status."""
+    """
+    Check current Microsoft 365 authentication status.
+    
+    Verifies if the user is authenticated and can access Microsoft 365 services.
+    Returns authentication status and user information if available.
+    
+    Args:
+        args: argparse namespace (unused in this command)
+    """
     result = call_mcp("verify-login")
     format_output(result)
 
 def cmd_accounts(args):
-    """List cached accounts."""
+    """
+    List all cached Microsoft 365 authentication accounts.
+    
+    Shows accounts that have been previously authenticated and cached
+    for automatic reuse. Useful for managing multiple accounts.
+    
+    Args:
+        args: argparse namespace (unused in this command)
+    """
     result = call_mcp("list-accounts")
     format_output(result)
 
 def cmd_user(args):
-    """Get current user info."""
+    """
+    Get current authenticated user's profile information.
+    
+    Retrieves and displays details about the currently authenticated user
+    including display name, email address, and other profile data.
+    
+    Args:
+        args: argparse namespace (unused in this command)
+    """
     result = call_mcp("get-current-user")
     format_output(result)
 
 def cmd_mail_list(args):
-    """List emails."""
+    """
+    List emails from the user's Outlook mailbox.
+    
+    Retrieves a list of recent emails with optional filtering by folder.
+    
+    Args:
+        args: argparse namespace containing:
+            top (int): Maximum number of emails to return (default: 10)
+            folder (str): Specific folder ID to search in (optional)
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -107,12 +169,32 @@ def cmd_mail_list(args):
     format_output(result)
 
 def cmd_mail_read(args):
-    """Read a specific email."""
+    """
+    Read the full content of a specific email message.
+    
+    Retrieves complete email details including subject, body, sender,
+    recipients, and attachments for the specified message ID.
+    
+    Args:
+        args: argparse namespace containing:
+            id (str): The unique message ID to retrieve
+    """
     result = call_mcp("get-mail-message", {"messageId": args.id})
     format_output(result)
 
 def cmd_mail_send(args):
-    """Send an email."""
+    """
+    Send a new email message.
+    
+    Creates and sends an email with the specified recipient, subject, and body.
+    Supports basic text emails with single recipient.
+    
+    Args:
+        args: argparse namespace containing:
+            to (str): Recipient email address (required)
+            subject (str): Email subject line (required)
+            body (str): Email body content (required)
+    """
     body = {
         "message": {
             "subject": args.subject,
@@ -129,7 +211,16 @@ def cmd_mail_send(args):
     format_output(result)
 
 def cmd_calendar_list(args):
-    """List calendar events."""
+    """
+    List upcoming calendar events.
+    
+    Retrieves a list of the user's calendar events, ordered by start time.
+    Shows events from all calendars by default.
+    
+    Args:
+        args: argparse namespace containing:
+            top (int): Maximum number of events to return (default: 10)
+    """
     params = {}
     if args.top:
         params['top'] = args.top
@@ -137,7 +228,20 @@ def cmd_calendar_list(args):
     format_output(result)
 
 def cmd_calendar_create(args):
-    """Create a calendar event."""
+    """
+    Create a new calendar event.
+    
+    Creates a new event in the user's default calendar with the specified
+    subject, start/end times, and optional description.
+    
+    Args:
+        args: argparse namespace containing:
+            subject (str): Event title/subject (required)
+            start (str): Start time in ISO 8601 format (required)
+            end (str): End time in ISO 8601 format (required)
+            body (str): Event description/notes (optional)
+            timezone (str): Timezone for event (default: America/Chicago)
+    """
     body = {
         "subject": args.subject,
         "start": {
