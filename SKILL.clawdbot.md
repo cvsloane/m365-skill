@@ -54,7 +54,7 @@ python3 ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" 
 python3 ms365_cli.py calendar list [--top N]
 
 # Create event
-python3 ms365_cli.py calendar create --subject "Meeting" --start "2026-01-15T10:00:00" --end "2026-01-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
+python3 ms365_cli.py calendar create --subject "Meeting" --start "2026-02-15T10:00:00" --end "2026-02-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
 ```
 
 ### OneDrive Files
@@ -77,7 +77,7 @@ python3 ms365_cli.py tasks lists
 python3 ms365_cli.py tasks get LIST_ID
 
 # Create task
-python3 ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-01-20"]
+python3 ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-02-20"]
 ```
 
 ### Contacts
