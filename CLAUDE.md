@@ -61,3 +61,13 @@ These must be set in Coolify for the clawdbot container:
    ```bash
    ssh root@apps-vps "docker exec clawdbot mcporter list ms365"
    ```
+
+<!-- VAULT_RESOURCES_START -->
+## SloaneVault Resources
+
+| Document | Vault Path |
+|----------|-----------|
+| Project Note | `20 - Development/21 - Projects/m365-skill.md` |
+
+All paths relative to `/home/cvsloane/SloaneVault/`.
+<!-- VAULT_RESOURCES_END -->
