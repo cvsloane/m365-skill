@@ -205,6 +205,7 @@ python3 ms365_cli.py calendar list
 
 # Send an email
 python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "Hello"
+python3 ms365_cli.py mail send --to "user@example.com" --subject "Test" --body "Hello" --confirm
 ```
 
 See SKILL.md for complete CLI documentation.
@@ -282,6 +283,16 @@ Disable all write operations:
   }
 }
 ```
+
+### CLI Write Safety
+
+The Python CLI wrapper dry-runs write operations by default. These commands print the MCP method and payload without calling Microsoft 365 unless `--confirm` is supplied:
+
+- `mail send`
+- `calendar create`
+- `tasks create`
+
+Use `--dry-run` to force preview mode even when `--confirm` is present.
 
 ### Discovery Mode
 

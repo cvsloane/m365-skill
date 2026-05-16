@@ -45,6 +45,7 @@ python3 ms365_cli.py mail read MESSAGE_ID
 
 # Send email
 python3 ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" --body "Message body"
+python3 ms365_cli.py mail send --to "recipient@example.com" --subject "Subject" --body "Message body" --confirm
 ```
 
 ### Calendar
@@ -55,6 +56,7 @@ python3 ms365_cli.py calendar list [--top N]
 
 # Create event
 python3 ms365_cli.py calendar create --subject "Meeting" --start "2026-02-15T10:00:00" --end "2026-02-15T11:00:00" [--body "Description"] [--timezone "America/Chicago"]
+python3 ms365_cli.py calendar create --subject "Meeting" --start "2026-02-15T10:00:00" --end "2026-02-15T11:00:00" --confirm
 ```
 
 ### OneDrive Files
@@ -78,6 +80,7 @@ python3 ms365_cli.py tasks get LIST_ID
 
 # Create task
 python3 ms365_cli.py tasks create LIST_ID --title "Task title" [--due "2026-02-20"]
+python3 ms365_cli.py tasks create LIST_ID --title "Task title" --confirm
 ```
 
 ### Contacts
@@ -115,7 +118,8 @@ When helping with Microsoft 365:
 - If not logged in, guide user through device code login
 - For calendar events, use ISO 8601 datetime format
 - Default timezone is America/Chicago
-- When sending email, confirm recipient and content before sending
+- Write commands dry-run by default; inspect the preview payload and rerun with `--confirm` only after recipient, content, date/time, or task details are correct.
+- Use `--dry-run` to force preview mode for email, calendar event, and task creation.
 - For tasks, list available task lists first so user can choose
 
 ## Attribution

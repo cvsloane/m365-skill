@@ -9,6 +9,8 @@ import json
 import sys
 import argparse
 
+WRITE_CONFIRMATION_NOTE = "To execute this operation, rerun with --confirm."
+
 def call_mcp(method: str, params: dict = None) -> dict:
     """Call the MCP server via stdio."""
     # Initialize request
@@ -69,6 +71,23 @@ def call_mcp(method: str, params: dict = None) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
+def dry_run_result(action: str, method: str, params: dict) -> dict:
+    """Return a simulated write result without calling the MCP server."""
+    return {
+        "dry_run": True,
+        "action": action,
+        "mcp_method": method,
+        "arguments": params,
+        "message": WRITE_CONFIRMATION_NOTE,
+    }
+
+def guarded_write(args, action: str, method: str, params: dict) -> dict:
+    """Dry-run write operations unless the caller explicitly confirms."""
+    if getattr(args, "dry_run", False) or not getattr(args, "confirm", False):
+        return dry_run_result(action, method, params)
+
+    return call_mcp(method, params)
+
 def format_output(data: dict, compact: bool = False):
     """Format output for display."""
     if compact:
@@ -125,7 +144,7 @@ def cmd_mail_send(args):
             ]
         }
     }
-    result = call_mcp("send-mail", {"body": body})
+    result = guarded_write(args, "send email", "send-mail", {"body": body})
     format_output(result)
 
 def cmd_calendar_list(args):
@@ -151,7 +170,7 @@ def cmd_calendar_create(args):
     }
     if args.body:
         body["body"] = {"contentType": "Text", "content": args.body}
-    result = call_mcp("create-calendar-event", {"body": body})
+    result = guarded_write(args, "create calendar event", "create-calendar-event", {"body": body})
     format_output(result)
 
 def cmd_files_list(args):
@@ -179,7 +198,7 @@ def cmd_tasks_create(args):
     body = {"title": args.title}
     if args.due:
         body["dueDateTime"] = {"dateTime": args.due, "timeZone": "America/Chicago"}
-    result = call_mcp("create-todo-task", {
+    result = guarded_write(args, "create task", "create-todo-task", {
         "todoTaskListId": args.list_id,
         "body": body
     })
@@ -201,6 +220,18 @@ def cmd_contacts_search(args):
 def main():
     parser = argparse.ArgumentParser(description="MS365 CLI for Clawdbot")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
+
+    def add_write_safety_flags(command_parser):
+        command_parser.add_argument(
+            '--confirm',
+            action='store_true',
+            help='Execute the write operation. Without this flag, writes are dry-run only.'
+        )
+        command_parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            help='Preview the write payload without calling Microsoft 365.'
+        )
 
     # Auth commands
     login_p = subparsers.add_parser('login', help='Login via device code')
@@ -232,6 +263,7 @@ def main():
     mail_send.add_argument('--to', required=True)
     mail_send.add_argument('--subject', required=True)
     mail_send.add_argument('--body', required=True)
+    add_write_safety_flags(mail_send)
     mail_send.set_defaults(func=cmd_mail_send)
 
     # Calendar commands
@@ -248,6 +280,7 @@ def main():
     cal_create.add_argument('--end', required=True, help='ISO datetime')
     cal_create.add_argument('--body', help='Event description')
     cal_create.add_argument('--timezone', default='America/Chicago')
+    add_write_safety_flags(cal_create)
     cal_create.set_defaults(func=cmd_calendar_create)
 
     # Files commands
@@ -273,6 +306,7 @@ def main():
     tasks_create.add_argument('list_id', help='Task list ID')
     tasks_create.add_argument('--title', required=True)
     tasks_create.add_argument('--due', help='Due date (ISO format)')
+    add_write_safety_flags(tasks_create)
     tasks_create.set_defaults(func=cmd_tasks_create)
 
     # Contacts commands
