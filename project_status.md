@@ -43,7 +43,6 @@ No active tmux session for this project.
 - `SKILL.clawdbot.md`
 - `SKILL.md`
 - `tests/test_ms365_cli.py`
-- `VERIFICATION_REPORT.md`
 
 
 ---
